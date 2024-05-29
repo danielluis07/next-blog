@@ -8,6 +8,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const notificationType = pgEnum("notificationType", [
   "NEW_USER",
@@ -137,3 +138,5 @@ export const notification = pgTable("notification", {
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
 });
+
+export const insertAdminSchema = createInsertSchema(admin);
