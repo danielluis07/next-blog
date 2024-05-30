@@ -15,71 +15,36 @@ export const notificationType = pgEnum("notificationType", [
   "NEW_COMMENT",
 ]);
 
-export const admin = pgTable("admin", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  email: text("email").unique(),
-  emailVerified: timestamp("emailVerified"),
-  imageUrl: text("imageUrl"),
-  password: text("password"),
-  isTwoFactorEnabled: boolean("isTwoFactorEnabled").default(false),
-  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow(),
-  updatedAt: timestamp("updatedAt").defaultNow(),
-});
-
-export const account = pgTable("account", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  adminId: uuid("adminId")
-    .references(() => admin.id, { onDelete: "cascade" })
-    .notNull(),
-  type: text("type"),
-  provider: text("provider"),
-  providerAccountId: text("providerAaccountId"),
-  refreshToken: text("refreshToken"),
-  accessToken: text("accessToken"),
-  expiresAt: integer("expiresAt"),
-  tokenType: text("tokenType"),
-  scope: text("scope"),
-  idToken: text("idToken"),
-  sessionState: text("sessionState"),
-});
-
-export const verificationToken = pgTable("verificationToken", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  email: text("email").unique().notNull(),
-  token: text("token").unique().notNull(),
-  expires: timestamp("expires", { withTimezone: true }).notNull(),
-});
-
-export const passwordResetToken = pgTable("passwordResetToken", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  email: text("email").notNull(),
-  token: text("token").unique().notNull(),
-  expires: timestamp("expires", { withTimezone: true }).notNull(),
-});
-
-export const twoFactorToken = pgTable("twoFactorToken", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  email: text("email").unique().notNull(),
-  token: text("token").unique().notNull(),
-  expires: timestamp("expires", { withTimezone: true }).notNull(),
-});
-
-export const twoFactorConfirmation = pgTable("twoFactorConfirmation", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  adminId: uuid("adminId")
-    .references(() => admin.id, { onDelete: "cascade" })
-    .unique(),
-});
+export const role = pgEnum("role", ["ADMIN", "USER"]);
 
 export const user = pgTable("user", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: text("email").unique().notNull(),
   name: text("name"),
-  imageUrl: text("imageUrl"),
-  emailVerified: timestamp("emailVerified", { withTimezone: true }),
+  image: text("image"),
+  role: role("role").default("ADMIN").notNull(),
+  emailVerified: timestamp("emailVerified", {
+    withTimezone: true,
+  }).defaultNow(),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
+});
+
+export const account = pgTable("account", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("userId")
+    .references(() => user.id, { onDelete: "cascade" })
+    .notNull(),
+  type: text("type"),
+  provider: text("provider"),
+  providerAccountId: text("providerAccountId"),
+  refresh_token: text("refresh_token"),
+  access_token: text("access_token"),
+  expires_at: integer("expires_at"),
+  token_type: text("token_type"),
+  scope: text("scope"),
+  id_token: text("id_token"),
+  session_state: text("session_state"),
 });
 
 export const post = pgTable("post", {
@@ -87,8 +52,9 @@ export const post = pgTable("post", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   published: boolean("published").default(false),
-  adminId: uuid("adminId")
-    .references(() => admin.id)
+  likes: integer("likes"),
+  userId: uuid("userId")
+    .references(() => user.id)
     .notNull(),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
@@ -131,12 +97,12 @@ export const comment = pgTable("comment", {
 
 export const notification = pgTable("notification", {
   id: uuid("id").defaultRandom().primaryKey(),
-  type: notificationType("notificationType").default("NEW_USER").notNull(),
+  type: notificationType("notificationType").notNull(),
   message: text("message").notNull(),
-  adminId: uuid("adminId").references(() => admin.id, { onDelete: "set null" }),
+  userId: uuid("userId").references(() => user.id, { onDelete: "set null" }),
   viewed: boolean("viewed").default(false),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
 });
 
-export const insertAdminSchema = createInsertSchema(admin);
+export const insertUserSchema = createInsertSchema(user);

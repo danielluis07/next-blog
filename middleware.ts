@@ -22,24 +22,14 @@ export default auth((req) => {
     return undefined;
   }
 
-  if (isAuthRoute) {
-    if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-    }
-    return undefined;
+  // Redirect authenticated users from root URL to dashboard
+  if (isLoggedIn && nextUrl.pathname === "/") {
+    return Response.redirect(new URL("/dashboard", nextUrl));
   }
 
+  // Redirect unauthenticated users trying to access protected routes
   if (!isLoggedIn && !isPublicRoute) {
-    let callbackUrl = nextUrl.pathname;
-    if (nextUrl.search) {
-      callbackUrl += nextUrl.search;
-    }
-
-    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-
-    return Response.redirect(
-      new URL(`/auth/login?callbackUrl=${encodedCallbackUrl}`, nextUrl)
-    );
+    return Response.redirect(new URL("/", nextUrl));
   }
 
   return undefined;

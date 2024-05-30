@@ -1,0 +1,17 @@
+"use client";
+
+import { BeatLoader } from "react-spinners";
+
+interface ExitModalProps {
+  exited: boolean;
+}
+
+export const ExitModal = ({ exited }: ExitModalProps) => {
+  if (!exited) return null;
+
+  return (
+    <div className="fixed flex justify-center items-center h-full inset-0 z-50 bg-milky opacity-50">
+      <BeatLoader color="#2563EB" />
+    </div>
+  );
+};

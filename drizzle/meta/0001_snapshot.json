@@ -1,6 +1,6 @@
 {
-  "id": "8b7f794a-ca16-4bdf-a435-d0f23f02b454",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "c6d16c62-4a36-4379-8133-c3358458811f",
+  "prevId": "8b7f794a-ca16-4bdf-a435-d0f23f02b454",
   "version": "6",
   "dialect": "postgresql",
   "tables": {
@@ -448,6 +448,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'ADMIN'"
+        },
+        "emailVerified": {
+          "name": "emailVerified",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
         },
         "createdAt": {
           "name": "createdAt",
