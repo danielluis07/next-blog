@@ -12,7 +12,7 @@ export const {
   pages: {
     error: "/auth/error",
   },
-  /* callbacks: {
+  callbacks: {
     async session({ token, session }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
@@ -28,7 +28,7 @@ export const {
     async jwt({ token }) {
       return token;
     },
-  }, */
+  },
   adapter: DrizzleAdapter(db),
   session: { strategy: "jwt" },
   ...authConfig,

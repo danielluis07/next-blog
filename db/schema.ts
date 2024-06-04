@@ -10,7 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-export const notificationType = pgEnum("notificationType", [
+export const notificationType = pgEnum("notification_type", [
   "NEW_USER",
   "NEW_COMMENT",
 ]);
@@ -26,8 +26,8 @@ export const user = pgTable("user", {
   emailVerified: timestamp("emailVerified", {
     withTimezone: true,
   }).defaultNow(),
-  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export const account = pgTable("account", {
@@ -50,14 +50,15 @@ export const account = pgTable("account", {
 export const post = pgTable("post", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: text("title").notNull(),
+  imageUrl: text("image_url"),
   content: text("content").notNull(),
   published: boolean("published").default(false),
-  likes: integer("likes"),
-  userId: uuid("userId")
+  likes: integer("likes").default(0),
+  userId: uuid("user_Id")
     .references(() => user.id)
     .notNull(),
-  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export const category = pgTable("category", {
@@ -66,12 +67,12 @@ export const category = pgTable("category", {
 });
 
 export const postToCategory = pgTable(
-  "postToCategory",
+  "post_to_category",
   {
-    postId: uuid("postId")
+    postId: uuid("post_Id")
       .references(() => post.id)
       .notNull(),
-    categoryId: uuid("categoryId")
+    categoryId: uuid("category_Id")
       .references(() => category.id)
       .notNull(),
   },
@@ -85,24 +86,25 @@ export const postToCategory = pgTable(
 export const comment = pgTable("comment", {
   id: uuid("id").primaryKey().defaultRandom(),
   text: text("text").notNull(),
-  postId: uuid("postId")
+  postId: uuid("post_Id")
     .references(() => post.id)
     .notNull(),
-  authorId: uuid("authorId")
+  authorId: uuid("author_Id")
     .references(() => user.id)
     .notNull(),
-  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export const notification = pgTable("notification", {
   id: uuid("id").defaultRandom().primaryKey(),
-  type: notificationType("notificationType").notNull(),
+  type: notificationType("notification_type").notNull(),
   message: text("message").notNull(),
-  userId: uuid("userId").references(() => user.id, { onDelete: "set null" }),
+  userId: uuid("user_Id").references(() => user.id, { onDelete: "set null" }),
   viewed: boolean("viewed").default(false),
-  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(user);
+export const insertPostSchema = createInsertSchema(post);
+export const insertCategorySchema = createInsertSchema(category);

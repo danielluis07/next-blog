@@ -1,6 +1,6 @@
-import type { Config } from "tailwindcss";
+import { withUt } from "uploadthing/tw";
 
-const config = {
+export default withUt({
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
@@ -18,6 +18,10 @@ const config = {
       },
     },
     extend: {
+      backgroundImage: {
+        bluegradient: "linear-gradient(to right, #1e40af, #1d4ed8, #2563eb)",
+        redgradient: "linear-gradient(to right, #991b1b, #ef4444)",
+      },
       screens: {
         maxsm: { max: "640px" },
         maxmd: { max: "768px" },
@@ -82,6 +86,4 @@ const config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config;
-
-export default config;
+});

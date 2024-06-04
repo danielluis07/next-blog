@@ -4,6 +4,12 @@ import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 import { auth } from "@/auth";
 import { QueryProvider } from "@/providers/query-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { SheetProvider } from "@/providers/sheet-provider";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
+import { extractRouterConfig } from "uploadthing/server";
+
+import { ourFileRouter } from "@/app/api/uploadthing/core";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
@@ -23,7 +29,12 @@ export default async function RootLayout({
     <SessionProvider session={session}>
       <html lang="en">
         <body className={montserrat.className}>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <Toaster />
+            <SheetProvider />
+            <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
+            {children}
+          </QueryProvider>
         </body>
       </html>
     </SessionProvider>

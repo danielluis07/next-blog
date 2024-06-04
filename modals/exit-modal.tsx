@@ -2,9 +2,9 @@
 
 import { BeatLoader } from "react-spinners";
 
-interface ExitModalProps {
+type ExitModalProps = {
   exited: boolean;
-}
+};
 
 export const ExitModal = ({ exited }: ExitModalProps) => {
   if (!exited) return null;

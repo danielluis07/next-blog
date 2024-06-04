@@ -1,1 +1,0 @@
-ALTER TABLE "user" ADD COLUMN "emailVerified" timestamp with time zone DEFAULT now();

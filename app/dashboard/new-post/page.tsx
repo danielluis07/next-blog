@@ -1,7 +1,10 @@
-const NewPostPage = () => {
+import { Suspense } from "react";
+import { PostForm } from "./_components/post-form";
+
+const NewPostPage = async () => {
   return (
-    <div>
-      <p>new post page</p>
+    <div className="h-full">
+      <PostForm />
     </div>
   );
 };
