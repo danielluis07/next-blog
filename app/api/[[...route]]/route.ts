@@ -1,13 +1,9 @@
-import { Context, Hono } from "hono";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { handle } from "hono/vercel";
-import {
-  authHandler,
-  initAuthConfig,
-  verifyAuth,
-  type AuthConfig,
-} from "@hono/auth-js";
+import { authHandler, initAuthConfig, verifyAuth } from "@hono/auth-js";
+import publicPosts from "./public-posts";
 import users from "./users";
-import GitHub from "@auth/core/providers/github";
 import Google from "@auth/core/providers/google";
 import posts from "./posts";
 import categories from "./categories";
@@ -29,14 +25,24 @@ app.use(
   }))
 );
 
+app.use(
+  "*",
+  cors({
+    origin: "http://localhost:3001",
+    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use("/auth/*", authHandler());
 
-app.use("/*", verifyAuth());
+app.use("/protected/*", verifyAuth());
 
 const routes = app
-  .route("/users", users)
-  .route("/posts", posts)
-  .route("/categories", categories);
+  .route("/protected/users", users)
+  .route("/protected/posts", posts)
+  .route("/protected/categories", categories)
+  .route("/public/posts", publicPosts);
 
 export const GET = handle(app);
 export const POST = handle(app);

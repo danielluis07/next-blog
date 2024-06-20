@@ -8,7 +8,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { createInsertSchema } from "drizzle-zod";
 
 export const notificationType = pgEnum("notification_type", [
   "NEW_USER",
@@ -50,9 +50,12 @@ export const account = pgTable("account", {
 export const post = pgTable("post", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: text("title").notNull(),
+  shortDescription: text("short_description"),
+  description: text("description").notNull(),
   imageUrl: text("image_url"),
   content: text("content").notNull(),
-  published: boolean("published").default(false),
+  isPublished: boolean("is_published").default(false).notNull(),
+  isFeatured: boolean("is_featured").default(false).notNull(),
   likes: integer("likes").default(0),
   userId: uuid("user_Id")
     .references(() => user.id)

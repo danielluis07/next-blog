@@ -1,11 +1,13 @@
 import { create } from "zustand";
 
-type useNewCategoryStore = {
-  isLoading: boolean;
-  setLoading: (loading: boolean) => void;
+type useIsLoadingStore = {
+  isOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
 };
 
-export const useIsEditorLoading = create<useNewCategoryStore>((set) => ({
-  isLoading: false,
-  setLoading: (loading) => set({ isLoading: loading }),
+export const useIsLoading = create<useIsLoadingStore>((set) => ({
+  isOpen: false,
+  onOpen: () => set({ isOpen: true }),
+  onClose: () => set({ isOpen: false }),
 }));

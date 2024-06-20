@@ -7,7 +7,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { useGetCategories } from "@/queries/use-get-categories";
+import { useGetCategories } from "@/queries/categories/use-get-categories";
 import { useEffect, useState } from "react";
 import { useController } from "react-hook-form";
 import type { Control } from "react-hook-form";
@@ -39,7 +39,6 @@ export const SelectCategory = ({ control }: SelectCategoriesProps) => {
   });
 
   const handleChange = (value: string) => {
-    console.log([...field.value, value]);
     if (!field.value.includes(value)) {
       field.onChange([...field.value, value]);
     }

@@ -43,6 +43,34 @@
       "when": 1717452306052,
       "tag": "0005_faithful_sunspot",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1717676389163,
+      "tag": "0006_famous_ultragirl",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1717676748202,
+      "tag": "0007_tidy_the_hunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1718109417224,
+      "tag": "0008_superb_rick_jones",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1718110826337,
+      "tag": "0009_strange_mad_thinker",
+      "breakpoints": true
     }
   ]
 }

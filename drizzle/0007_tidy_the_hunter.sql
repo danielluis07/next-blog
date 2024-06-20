@@ -1,0 +1,1 @@
+ALTER TABLE "post" ALTER COLUMN "description" SET NOT NULL;

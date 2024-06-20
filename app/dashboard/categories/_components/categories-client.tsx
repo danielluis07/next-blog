@@ -1,11 +1,11 @@
 "use client";
 
-import { useGetCategories } from "@/queries/use-get-categories";
+import { useGetCategories } from "@/queries/categories/use-get-categories";
 import { CategoriesDataTable } from "./categories-table";
 import { columns } from "./categories-columns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
-import { useDeleteCategories } from "@/queries/use-delete-categories";
+import { useDeleteCategories } from "@/queries/categories/use-delete-categories";
 
 export const CategoriesClient = () => {
   const categoriesQuery = useGetCategories();

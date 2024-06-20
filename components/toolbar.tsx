@@ -14,9 +14,13 @@ import { LuHeading1, LuHeading2, LuHeading3 } from "react-icons/lu";
 import { RiDoubleQuotesL, RiFontFamily } from "react-icons/ri";
 import { GoHorizontalRule } from "react-icons/go";
 import { useEffect, useRef, useState } from "react";
+import { CiUndo } from "react-icons/ci";
+import { CiRedo } from "react-icons/ci";
+import { GoStrikethrough } from "react-icons/go";
 import { UploadButton } from "@/lib/uploadthing";
 import { toast } from "sonner";
 import { MoonLoader } from "react-spinners";
+import { cn } from "@/lib/utils";
 
 type ToolbarProps = {
   editor: Editor | null;
@@ -116,6 +120,13 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
           pressed={editor.isActive("underline")}
           onPressedChange={() => editor.chain().toggleUnderline().run()}>
           <FaUnderline className="text-lg" />
+        </Toggle>
+        <Toggle
+          variant="outline"
+          size="sm"
+          pressed={editor.isActive("bold")}
+          onPressedChange={() => editor.chain().focus().toggleStrike().run()}>
+          <GoStrikethrough className="text-lg" />
         </Toggle>
       </div>
 
@@ -278,6 +289,25 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
             toast.error(`${error?.message}`);
           }}
         />
+      </div>
+
+      <div className="space-x-1">
+        <div
+          className={cn(
+            !editor.can().undo() && "bg-gray-100 pointer-events-none",
+            "inline-flex items-center justify-center border border-gray-200 p-[7px] cursor-pointer rounded-md text-sm font-medium transition-colors hover:bg-muted hover:text-muted-foreground"
+          )}
+          onClick={() => editor.chain().focus().undo().run()}>
+          <CiUndo className="text-lg" />
+        </div>
+        <div
+          className={cn(
+            !editor.can().redo() && "bg-gray-100 pointer-events-none",
+            "inline-flex items-center justify-center border border-gray-200 p-[7px] cursor-pointer rounded-md text-sm font-medium transition-colors hover:bg-muted hover:text-muted-foreground"
+          )}
+          onClick={() => editor.chain().focus().redo().run()}>
+          <CiRedo className="text-lg" />
+        </div>
       </div>
     </div>
   );

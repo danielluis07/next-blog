@@ -1,30 +1,22 @@
 "use client";
 
 import { z } from "zod";
+import { Card, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useGetPost } from "@/queries/posts/use-get-post";
+import { insertPostSchema } from "@/db/schema";
 import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useGetPostCategories } from "@/queries/posts/get-post-categories";
 import {
   Form,
-  FormField,
   FormControl,
-  FormLabel,
-  FormMessage,
-  FormItem,
   FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { insertPostSchema } from "@/db/schema";
-import { useCreatePost } from "@/queries/posts/use-create-post";
-import { useRouter } from "next/navigation";
-import { TextEditor } from "@/components/text-editor";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { UploadImage } from "@/components/uploadImage";
-import { SelectCategory } from "./select-category";
-import { useSummary } from "@/hooks/use-summary";
-import { SummarySheet } from "./summary-sheet";
-import { useGetCategories } from "@/queries/categories/use-get-categories";
-import { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -32,8 +24,22 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { IoClose } from "react-icons/io5";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useState } from "react";
+import { useGetCategories } from "@/queries/categories/use-get-categories";
+import { UploadImage } from "@/components/uploadImage";
+import { Button } from "@/components/ui/button";
+import { useSummary } from "@/hooks/use-summary";
+import { EditTextEditor } from "@/components/edit-text-editor";
+import { SummarySheet } from "@/app/dashboard/new-post/_components/summary-sheet";
+import { useEditPost } from "@/queries/posts/use-edit-post";
+import { useConfirm } from "@/hooks/use-confirm";
+import { useRouter } from "next/navigation";
+import { useDeletePost } from "@/queries/posts/use-delete-post";
 import { Checkbox } from "@/components/ui/checkbox";
+
+type EditPostProps = {
+  id: string;
+};
 
 const formSchema = insertPostSchema
   .pick({
@@ -57,12 +63,25 @@ interface Categories {
   name: string;
 }
 
-export const PostForm = () => {
+export const EditPostForm = ({ id }: EditPostProps) => {
   const router = useRouter();
   const { onOpen } = useSummary();
+  const postQuery = useGetPost(id);
+  const deleteMutation = useDeletePost(id);
   const categoriesQuery = useGetCategories();
+  const postCategoriesQuery = useGetPostCategories(id);
   const [categories, setCategories] = useState<Categories[] | null>([]);
-  const disabled = categories?.length === 0;
+  const postCategoriesIds = postCategoriesQuery.data
+    ? postCategoriesQuery?.data.map((cat) => cat.id)
+    : [];
+  const disabled = !categoriesQuery.isLoading && categories?.length === 0;
+
+  const [ConfirmDialog, confirm] = useConfirm(
+    "Tem certeza?",
+    "Você está prestes a deletar esse post"
+  );
+
+  console.log(postQuery.data);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -84,7 +103,7 @@ export const PostForm = () => {
     name: "categoryIds",
   });
 
-  const mutation = useCreatePost();
+  const mutation = useEditPost(id);
 
   const onSubmit = (values: FormValues) => {
     mutation.mutate(values, {
@@ -117,17 +136,44 @@ export const PostForm = () => {
       categoryField.value.includes(category.id)
     ) || [];
 
+  const onDelete = async () => {
+    const ok = await confirm();
+
+    if (ok)
+      [
+        deleteMutation.mutate(undefined, {
+          onSuccess: () => {
+            router.push("/dashboard/posts");
+          },
+        }),
+      ];
+  };
+
   useEffect(() => {
     if (categoriesQuery.data) {
       setCategories(categoriesQuery.data);
     }
   }, [categoriesQuery.data]);
 
-  if (!availableCategories) {
-    return <p>Nenhuma categoria encontrada</p>;
-  }
+  useEffect(() => {
+    if (postQuery.data && postCategoriesQuery.data) {
+      form.reset({
+        title: postQuery.data.post.title,
+        shortDescription: postQuery.data.post.shortDescription,
+        description: postQuery.data.post.description,
+        imageUrl: postQuery.data.post.imageUrl,
+        content: postQuery.data.post.content,
+        categoryIds: postCategoriesIds,
+        isFeatured: postQuery.data.post.isFeatured,
+      });
+    }
+  }, [postQuery.data, postCategoriesQuery.data, form.reset]);
 
-  if (categoriesQuery.isLoading) {
+  if (
+    postQuery.isLoading ||
+    categoriesQuery.isLoading ||
+    postCategoriesQuery.isLoading
+  ) {
     return (
       <div className="h-full">
         <Card className="size-full px-2 pt-2">
@@ -153,7 +199,7 @@ export const PostForm = () => {
   return (
     <>
       <Card className="size-full p-2">
-        <CardTitle className="text-2xl pl-1 py-5">Crie seu post</CardTitle>
+        <CardTitle className="text-2xl pl-1 py-5">Edite seu Post</CardTitle>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit, onInvalid)}
@@ -195,57 +241,68 @@ export const PostForm = () => {
                 </FormItem>
               )}
             />
-            <Select onValueChange={handleChange} value="" disabled={disabled}>
-              <FormControl>
-                <SelectTrigger>
-                  {disabled ? (
-                    <span className="text-muted-foreground">
-                      Nenhuma categoria criada
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      {availableCategories?.length < 1 &&
-                      selectedCategories.length > 0
-                        ? "---"
-                        : "Selecione categorias"}
-                    </span>
-                  )}
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {categories
-                  ?.filter(
-                    (category) => !categoryField.value.includes(category.id)
-                  )
-                  .map((category) => (
-                    <SelectItem
-                      className="cursor-pointer"
-                      key={category.id}
-                      value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-            <div className="flex flex-wrap items-center space-x-2 py-2">
-              {categoryField.value.map((value: string) => {
-                const category = categories?.find((cat) => cat.id === value);
-                return (
-                  <div
-                    key={value}
-                    className="flex items-center justify-center grow-0 space-x-2 p-2 rounded-lg bg-muted">
-                    <p className="text-sm text-gray-400">
-                      {category ? category.name : value}
-                    </p>
-                    <span
-                      className="cursor-pointer text-md text-gray-400 hover:text-black"
-                      onClick={() => handleRemove(value)}>
-                      <IoClose />
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+            {postCategoriesQuery.isLoading || !availableCategories ? (
+              <div>
+                <Skeleton className="w-full h-10" />
+              </div>
+            ) : (
+              <div>
+                <Select
+                  onValueChange={handleChange}
+                  value=""
+                  disabled={disabled}>
+                  <FormControl>
+                    <SelectTrigger>
+                      {disabled ? (
+                        <span>Nenhuma categoria criada</span>
+                      ) : (
+                        <span>
+                          {availableCategories?.length < 1 &&
+                          selectedCategories.length > 0
+                            ? "---"
+                            : "Selecione categorias"}
+                        </span>
+                      )}
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories
+                      ?.filter(
+                        (category) => !categoryField.value.includes(category.id)
+                      )
+                      .map((category) => (
+                        <SelectItem
+                          className="cursor-pointer"
+                          key={category.id}
+                          value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex flex-wrap items-center space-x-2 py-2">
+                  {categoryField.value.map((value: string) => {
+                    const category = categories?.find(
+                      (cat) => cat.id === value
+                    );
+                    return (
+                      <div
+                        key={value}
+                        className="flex items-center justify-center grow-0 space-x-2 p-2 rounded-lg bg-muted">
+                        <p className="text-sm text-gray-400">
+                          {category ? category.name : value}
+                        </p>
+                        <span
+                          className="cursor-pointer text-md text-gray-400 hover:text-black"
+                          onClick={() => handleRemove(value)}>
+                          <IoClose />
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <FormField
               control={form.control}
               name="imageUrl"
@@ -290,7 +347,7 @@ export const PostForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <TextEditor content={field.value} {...field} />
+                    <EditTextEditor initialContent={field.value} {...field} />
                   </FormControl>
                 </FormItem>
               )}
@@ -320,14 +377,22 @@ export const PostForm = () => {
                 className="w-56"
                 type="submit"
                 disabled={mutation.isPending}>
-                Criar
+                Editar
               </Button>
               <Button
                 onClick={onOpen}
                 className="w-56"
                 type="button"
                 disabled={mutation.isPending}>
-                Prévia
+                Resumo
+              </Button>
+              <Button
+                onClick={onDelete}
+                className="w-56"
+                variant="destructive"
+                type="button"
+                disabled={mutation.isPending}>
+                Deletar post
               </Button>
             </div>
           </form>
@@ -340,6 +405,7 @@ export const PostForm = () => {
         onRemove={() => form.setValue("imageUrl", "")}
         selectedCategories={selectedCategories}
       />
+      <ConfirmDialog />
     </>
   );
 };

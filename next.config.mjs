@@ -10,6 +10,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "utfs.io",
       },
+      {
+        protocol: "https",
+        hostname: "ca-times.brightspotcdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "media.gettyimages.com",
+      },
     ],
   },
 };

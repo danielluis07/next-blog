@@ -1,7 +1,7 @@
 "use client";
 
-import { forwardRef, useState } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { forwardRef, useEffect, useState } from "react";
+import { useEditor, EditorContent, Content } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Toolbar } from "@/components/toolbar";
 import Underline from "@tiptap/extension-underline";
@@ -14,12 +14,12 @@ import Image from "@tiptap/extension-image";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type TextEditorProps = {
-  content: string;
+  initialContent: string;
   onChange: (richText: string) => void;
 };
 
-export const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
-  ({ content, onChange }, ref) => {
+export const EditTextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
+  ({ initialContent, onChange }, ref) => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const editor = useEditor({
@@ -40,7 +40,6 @@ export const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
         }),
         CharacterCount,
       ],
-      content: content,
       editorProps: {
         attributes: {
           class: "editor-content",
@@ -54,6 +53,12 @@ export const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
         setIsLoading(false);
       },
     });
+
+    useEffect(() => {
+      if (editor) {
+        editor.commands.setContent(initialContent);
+      }
+    }, [editor, initialContent]);
 
     if (isLoading) {
       return (

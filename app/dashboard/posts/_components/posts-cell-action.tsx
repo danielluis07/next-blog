@@ -13,18 +13,19 @@ import { LiaTrashAltSolid } from "react-icons/lia";
 import { IoIosMore } from "react-icons/io";
 import { useOpenCategory } from "@/hooks/use-open-category";
 import { useDeleteCategory } from "@/queries/categories/use-delete-category";
+import { useRouter } from "next/navigation";
 
-interface CategoriesCellActionProps {
+interface PostsCellActionProps {
   id: string;
 }
 
-export const CategoriesCellAction = ({ id }: CategoriesCellActionProps) => {
+export const PostsCellAction = ({ id }: PostsCellActionProps) => {
+  const router = useRouter();
   const deleteMutation = useDeleteCategory(id);
-  const { onOpen } = useOpenCategory();
 
   const [ConfirmDialog, confirm] = useConfirm(
     "Tem certeza?",
-    "Você está prestes a deletar a categoria selecionada"
+    "Você está prestes a deletar o post selecionado"
   );
 
   const onDelete = async () => {
@@ -49,7 +50,7 @@ export const CategoriesCellAction = ({ id }: CategoriesCellActionProps) => {
           <DropdownMenuItem
             disabled={deleteMutation.isPending}
             className="cursor-pointer"
-            onClick={() => onOpen(id)}>
+            onClick={() => router.push(`/dashboard/posts/${id}`)}>
             <CiEdit className="mr-2 size-5 text-blue-700" />
             Editar
           </DropdownMenuItem>

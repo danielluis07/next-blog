@@ -5,7 +5,7 @@ export const useGetCategories = () => {
   const query = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const res = await client.api.categories.$get();
+      const res = await client.api.protected.categories.$get();
 
       if (!res.ok) {
         throw new Error("Failed to fetch categories");

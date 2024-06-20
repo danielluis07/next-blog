@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { useNewCategory } from "@/hooks/use-new-category";
 import { CreateCategoryForm } from "../_forms/create-category-form";
-import { useCreateCategory } from "@/queries/use-create-category";
+import { useCreateCategory } from "@/queries/categories/use-create-category";
 import { insertCategorySchema } from "@/db/schema";
 import {
   Sheet,

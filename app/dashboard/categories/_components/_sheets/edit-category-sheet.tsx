@@ -5,11 +5,11 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EditCategoryForm } from "../_forms/edit-category-form";
 import { insertCategorySchema } from "@/db/schema";
 import { useOpenCategory } from "@/hooks/use-open-category";
-import { useGetCategory } from "@/queries/use-get-category";
+import { useGetCategory } from "@/queries/categories/use-get-category";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useEditCategory } from "@/queries/use-edit-category";
-import { useDeleteCategory } from "@/queries/use-delete-category";
+import { useEditCategory } from "@/queries/categories/use-edit-category";
+import { useDeleteCategory } from "@/queries/categories/use-delete-category";
 import {
   Sheet,
   SheetContent,
@@ -26,6 +26,7 @@ type FormValues = z.input<typeof formSchema>;
 
 export const EditCategorySheet = () => {
   const { isOpen, onClose, id } = useOpenCategory();
+
   const editMutation = useEditCategory(id);
 
   const categoryQuery = useGetCategory(id);
