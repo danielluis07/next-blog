@@ -7,7 +7,7 @@ import { client } from "@/lib/hono";
 import { CategoriesCellAction } from "./categories-cell-action";
 
 export type ResponseType = InferResponseType<
-  typeof client.api.categories.$get,
+  typeof client.api.protected.categories.$get,
   200
 >["data"][0];
 
