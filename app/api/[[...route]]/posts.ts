@@ -19,23 +19,6 @@ const app = new Hono()
       .select()
       .from(post)
       .innerJoin(user, eq(user.id, post.userId))
-      .where(eq(post.isPublished, true))
-      .orderBy(desc(post.createdAt));
-
-    return c.json({ data });
-  })
-  .get("/featured", async (c) => {
-    const auth = c.get("authUser");
-
-    if (!auth.session) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
-
-    const data = await db
-      .select()
-      .from(post)
-      .where(and(eq(post.isFeatured, true), eq(post.isPublished, true)))
-      .innerJoin(user, eq(user.id, post.userId))
       .orderBy(desc(post.createdAt));
 
     return c.json({ data });
