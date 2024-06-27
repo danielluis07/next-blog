@@ -119,10 +119,8 @@ export const columns: ColumnDef<FormattedPosts>[] = [
     accessorKey: "user.image",
     header: "Autor",
     cell: ({ row }) => {
-      const [isLoading, setIsLoading] = useState<boolean>(true);
       return (
         <div>
-          {isLoading && <Skeleton className="size-8 rounded-full" />}
           <div className="relative size-8 rounded-full overflow-hidden">
             <Image
               src={
@@ -132,7 +130,6 @@ export const columns: ColumnDef<FormattedPosts>[] = [
               }
               fill
               alt="imagem"
-              onLoad={() => setIsLoading(false)}
               className="object-cover"
               sizes="(max-width: 3840px) 48px"
             />
