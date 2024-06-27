@@ -14,15 +14,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { insertPostSchema } from "@/db/schema";
+import { insertPostSchema, league, postType } from "@/db/schema";
 import { useCreatePost } from "@/queries/posts/use-create-post";
 import { useRouter } from "next/navigation";
 import { TextEditor } from "@/components/text-editor";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { UploadImage } from "@/components/uploadImage";
-import { SelectCategory } from "./select-category";
 import { useSummary } from "@/hooks/use-summary";
-import { SummarySheet } from "./summary-sheet";
+import { SummarySheet } from "@/components/summary-sheet";
 import { useGetCategories } from "@/queries/categories/use-get-categories";
 import { useEffect, useState } from "react";
 import {
@@ -34,6 +33,7 @@ import {
 import { IoClose } from "react-icons/io5";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = insertPostSchema
   .pick({
@@ -41,7 +41,10 @@ const formSchema = insertPostSchema
     description: true,
     shortDescription: true,
     imageUrl: true,
+    league: true,
+    postType: true,
     content: true,
+    isPublished: true,
     isFeatured: true,
   })
   .extend({
@@ -72,6 +75,9 @@ export const PostForm = () => {
       shortDescription: null,
       imageUrl: "",
       content: "",
+      league: undefined,
+      postType: undefined,
+      isPublished: false,
       categoryIds: [],
       isFeatured: false,
     },
@@ -157,7 +163,7 @@ export const PostForm = () => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit, onInvalid)}
-            className="space-y-2">
+            className="space-y-3">
             <FormField
               name="title"
               control={form.control}
@@ -165,17 +171,6 @@ export const PostForm = () => {
                 <FormItem>
                   <FormControl>
                     <Input {...field} placeholder="Insira um título" />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="description"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input {...field} placeholder="Insira uma descrição" />
                   </FormControl>
                 </FormItem>
               )}
@@ -191,6 +186,77 @@ export const PostForm = () => {
                       value={field.value ? field.value : ""}
                       placeholder="Insira uma descrição curta"
                     />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="description"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea {...field} placeholder="Insira uma descrição" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="league"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}>
+                      <SelectTrigger>
+                        <span className="text-muted-foreground">
+                          {field.value ? field.value : "Selecione a liga"}
+                        </span>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {league.enumValues.map((option, index) => (
+                          <SelectItem
+                            className="cursor-pointer"
+                            key={index}
+                            value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="postType"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}>
+                      <SelectTrigger>
+                        <span className="text-muted-foreground">
+                          {field.value
+                            ? field.value
+                            : "Selecione o tipo de post"}
+                        </span>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {postType.enumValues.map((option, index) => (
+                          <SelectItem
+                            className="cursor-pointer"
+                            key={index}
+                            value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                 </FormItem>
               )}
@@ -302,6 +368,7 @@ export const PostForm = () => {
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                   <FormControl>
                     <Checkbox
+                      disabled={mutation.isPending}
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
@@ -309,7 +376,28 @@ export const PostForm = () => {
                   <div className="space-y-1 leading-none">
                     <FormLabel>Destaque</FormLabel>
                     <FormDescription>
-                      Esse produto vai aparecer na página principal
+                      Esse produto vai aparecer no carrosel
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="isPublished"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      disabled={mutation.isPending}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Publicar</FormLabel>
+                    <FormDescription>
+                      Esse produto vai aparecer no blog
                     </FormDescription>
                   </div>
                 </FormItem>
@@ -320,7 +408,7 @@ export const PostForm = () => {
                 className="w-56"
                 type="submit"
                 disabled={mutation.isPending}>
-                Criar
+                Salvar
               </Button>
               <Button
                 onClick={onOpen}
@@ -337,6 +425,8 @@ export const PostForm = () => {
         title={form.watch("title")}
         description={form.watch("description")}
         imageUrl={form.watch("imageUrl")}
+        league={form.watch("league")}
+        postType={form.watch("postType")}
         onRemove={() => form.setValue("imageUrl", "")}
         selectedCategories={selectedCategories}
       />

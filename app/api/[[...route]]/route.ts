@@ -39,7 +39,7 @@ app.use("/auth/*", authHandler());
 app.use("/protected/*", verifyAuth());
 
 const routes = app
-  .route("/protected/users", users)
+  .route("/public/users", users)
   .route("/protected/posts", posts)
   .route("/protected/categories", categories)
   .route("/public/posts", publicPosts);

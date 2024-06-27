@@ -17,6 +17,15 @@ export const notificationType = pgEnum("notification_type", [
 
 export const role = pgEnum("role", ["ADMIN", "USER"]);
 
+export const league = pgEnum("league", ["NFL", "NBA"]);
+
+export const postType = pgEnum("post_type", [
+  "NOTÍCIA",
+  "OPINIÃO",
+  "PODCAST",
+  "HISTÓRIA",
+]);
+
 export const user = pgTable("user", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: text("email").unique().notNull(),
@@ -54,6 +63,8 @@ export const post = pgTable("post", {
   description: text("description").notNull(),
   imageUrl: text("image_url"),
   content: text("content").notNull(),
+  league: league("league").notNull(),
+  postType: postType("post_type").notNull(),
   isPublished: boolean("is_published").default(false).notNull(),
   isFeatured: boolean("is_featured").default(false).notNull(),
   likes: integer("likes").default(0),

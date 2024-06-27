@@ -98,7 +98,7 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
   }, [colorDivRef]);
 
   return (
-    <div className="flex items-center lg:space-x-5 pb-2">
+    <div className="flex flex-col gap-y-3 lg:flex-row lg:items-center lg:space-x-5 pb-2">
       <div className="space-x-1">
         <Toggle
           variant="outline"
@@ -128,6 +128,35 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
           onPressedChange={() => editor.chain().focus().toggleStrike().run()}>
           <GoStrikethrough className="text-lg" />
         </Toggle>
+        <div
+          ref={colorDivRef}
+          onClick={() => setOpen(!open)}
+          className="relative inline-flex items-center justify-center border border-gray-200 py-[5px] px-[7px] cursor-pointer rounded-md text-sm font-medium transition-colors hover:bg-muted">
+          <div className="flex flex-col justify-center">
+            <RiFontFamily className="text-lg" />
+            <div
+              className="w-full h-[3px]"
+              style={{
+                backgroundColor: value
+                  ? colors.find((color) => color.value === value)?.value
+                  : "#000000",
+              }}></div>
+          </div>
+          {open && (
+            <div className="grid grid-cols-5 gap-2 p-2 border border-gray-200 absolute left-0 top-[30px] w-48 z-10 bg-white shadow-md">
+              {colors.map((color) => (
+                <div
+                  className="flex justify-center p-1 hover:bg-muted"
+                  key={color.value}
+                  onClick={() => handleClick(color.value)}>
+                  <div
+                    className="size-3"
+                    style={{ backgroundColor: color.value }}></div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="space-x-1">
@@ -163,36 +192,6 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
           }>
           <CiTextAlignJustify className="text-lg" />
         </Toggle>
-      </div>
-
-      <div
-        ref={colorDivRef}
-        onClick={() => setOpen(!open)}
-        className="relative inline-flex items-center justify-center border border-gray-200 py-[5px] px-[7px] cursor-pointer rounded-md text-sm font-medium transition-colors hover:bg-muted">
-        <div className="flex flex-col justify-center">
-          <RiFontFamily className="text-lg" />
-          <div
-            className="w-full h-[3px]"
-            style={{
-              backgroundColor: value
-                ? colors.find((color) => color.value === value)?.value
-                : "#000000",
-            }}></div>
-        </div>
-        {open && (
-          <div className="grid grid-cols-5 gap-2 p-2 border border-gray-200 absolute left-0 top-[30px] w-48 z-10 bg-white shadow-md">
-            {colors.map((color) => (
-              <div
-                className="flex justify-center p-1 hover:bg-muted"
-                key={color.value}
-                onClick={() => handleClick(color.value)}>
-                <div
-                  className="size-3"
-                  style={{ backgroundColor: color.value }}></div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="space-x-1">
@@ -263,7 +262,7 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
         </div>
       </div>
 
-      <div>
+      <div className="flex justify-start lg:justify-normal">
         <UploadButton
           className="ut-button:w-[42px] ut-button:h-[33px] ut-button:ring-0 ut-button:focus-within:ring-0 ut-button:focus-within:ring-offset-0 ut-button:border ut-button:border-gray-200 ut-button:bg-transparent ut-button:hover:bg-muted ut-button:after:bg-transparent ut-button:after:transition-none ut-allowed-content:hidden"
           endpoint="imageUploader"
@@ -291,7 +290,7 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
         />
       </div>
 
-      <div className="space-x-1">
+      <div className="xl:space-x-1">
         <div
           className={cn(
             !editor.can().undo() && "bg-gray-100 pointer-events-none",

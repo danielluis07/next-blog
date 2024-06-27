@@ -27,9 +27,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useNewCategory } from "@/hooks/use-new-category";
 import { useConfirm } from "@/hooks/use-confirm";
 import { LiaTrashAltSolid } from "react-icons/lia";
+import { cn } from "@/lib/utils";
 
 type PostsDataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
@@ -55,8 +55,6 @@ export function PostsDataTable<TData, TValue>({
   );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
-
-  const { onOpen } = useNewCategory();
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -113,13 +111,15 @@ export function PostsDataTable<TData, TValue>({
         </div>
       </div>
       <div className="rounded-md border">
-        <Table>
+        <Table className="w-[800px] md:w-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="font-extrabold">
+                    <TableHead
+                      key={header.id}
+                      className="font-extrabold text-center">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -138,14 +138,47 @@ export function PostsDataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    console.log(cell);
+                    let cellStyle = "";
+
+                    console.log(cell.column.id);
+
+                    if (cell.column.id === "title") {
+                      cellStyle = "w-[350px]";
+                    }
+
+                    if (cell.column.id === "post_isPublished") {
+                      if (cell.getValue() === "Sim") {
+                        cellStyle =
+                          "flex justify-center w-10 py-1 ml-4 rounded-lg bg-green-200 text-green-700 font-bold"; // Style for 'Sim'
+                      } else if (cell.getValue() === "Não") {
+                        cellStyle =
+                          "flex justify-center w-10 py-1 ml-4 rounded-lg bg-red-200 text-red-700 font-bold"; // Style for 'Não'
+                      }
+                    }
+
+                    if (cell.column.id === "post_isFeatured") {
+                      if (cell.getValue() === "Sim") {
+                        cellStyle =
+                          "flex justify-center w-10 py-1 ml-4 rounded-lg bg-blue-200 text-blue-500 font-bold"; // Style for 'Sim'
+                      } else if (cell.getValue() === "Não") {
+                        cellStyle =
+                          "flex justify-center w-10 py-1 ml-4 rounded-lg bg-gray-200 text-gray-700 font-bold"; // Style for 'Não'
+                      }
+                    }
+
+                    return (
+                      <TableCell key={cell.id}>
+                        <div className={cn(cellStyle)}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </div>
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))
             ) : (

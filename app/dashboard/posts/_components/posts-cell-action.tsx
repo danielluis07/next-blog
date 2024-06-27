@@ -14,6 +14,7 @@ import { IoIosMore } from "react-icons/io";
 import { useOpenCategory } from "@/hooks/use-open-category";
 import { useDeleteCategory } from "@/queries/categories/use-delete-category";
 import { useRouter } from "next/navigation";
+import { useDeletePost } from "@/queries/posts/use-delete-post";
 
 interface PostsCellActionProps {
   id: string;
@@ -21,7 +22,7 @@ interface PostsCellActionProps {
 
 export const PostsCellAction = ({ id }: PostsCellActionProps) => {
   const router = useRouter();
-  const deleteMutation = useDeleteCategory(id);
+  const deleteMutation = useDeletePost(id);
 
   const [ConfirmDialog, confirm] = useConfirm(
     "Tem certeza?",

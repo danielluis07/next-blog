@@ -5,7 +5,7 @@ import { post, category, postToCategory, user } from "@/db/schema";
 import { v4 as uuidv4 } from "uuid";
 import { zValidator } from "@hono/zod-validator";
 import { insertPostSchema } from "@/db/schema";
-import { and, eq, inArray, desc } from "drizzle-orm";
+import { and, eq, inArray, desc, count } from "drizzle-orm";
 
 const app = new Hono()
   .get("/", async (c) => {
@@ -19,6 +19,7 @@ const app = new Hono()
       .select()
       .from(post)
       .innerJoin(user, eq(user.id, post.userId))
+      .where(eq(post.isPublished, true))
       .orderBy(desc(post.createdAt));
 
     return c.json({ data });
@@ -33,13 +34,13 @@ const app = new Hono()
     const data = await db
       .select()
       .from(post)
-      .where(eq(post.isFeatured, true))
+      .where(and(eq(post.isFeatured, true), eq(post.isPublished, true)))
       .innerJoin(user, eq(user.id, post.userId))
       .orderBy(desc(post.createdAt));
 
     return c.json({ data });
   })
-  .get("/main-posts", async (c) => {
+  .get("/latest-posts", async (c) => {
     const auth = c.get("authUser");
 
     if (!auth.session) {
@@ -47,11 +48,23 @@ const app = new Hono()
     }
 
     const data = await db
-      .select()
+      .select({ id: post.id, imageUrl: post.imageUrl, title: post.title })
       .from(post)
-      .where(eq(post.isFeatured, false))
+      .where(eq(post.isPublished, true))
       .innerJoin(user, eq(user.id, post.userId))
-      .orderBy(desc(post.createdAt));
+      .orderBy(desc(post.createdAt))
+      .limit(4);
+
+    return c.json({ data });
+  })
+  .get("/posts-count", async (c) => {
+    const auth = c.get("authUser");
+
+    if (!auth.session) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const [data] = await db.select({ count: count() }).from(post);
 
     return c.json({ data });
   })
@@ -132,6 +145,9 @@ const app = new Hono()
           shortDescription: true,
           imageUrl: true,
           content: true,
+          league: true,
+          isPublished: true,
+          postType: true,
           isFeatured: true,
         })
         .extend({
@@ -158,6 +174,8 @@ const app = new Hono()
           description: values.description,
           content: values.content,
           imageUrl: values.imageUrl,
+          league: values.league,
+          postType: values.postType,
           userId: auth.token?.sub,
           isFeatured: values.isFeatured,
         })
@@ -219,6 +237,9 @@ const app = new Hono()
           description: true,
           imageUrl: true,
           content: true,
+          league: true,
+          isPublished: true,
+          postType: true,
           isFeatured: true,
         })
         .extend({
@@ -242,7 +263,7 @@ const app = new Hono()
 
       const [data] = await db
         .update(post)
-        .set(values)
+        .set({ ...values, updatedAt: new Date() })
         .where(and(eq(post.id, id)))
         .returning();
 

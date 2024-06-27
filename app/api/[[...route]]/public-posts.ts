@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { db } from "@/db/drizzle";
 import { post, category, postToCategory, user } from "@/db/schema";
 import { zValidator } from "@hono/zod-validator";
-import { eq, desc, or, ilike } from "drizzle-orm";
+import { eq, desc, or, ilike, and } from "drizzle-orm";
 
 const app = new Hono()
   .get("/", async (c) => {
@@ -19,17 +19,37 @@ const app = new Hono()
     const data = await db
       .select()
       .from(post)
-      .where(eq(post.isFeatured, true))
+      .where(and(eq(post.isFeatured, true), eq(post.isPublished, true)))
       .innerJoin(user, eq(user.id, post.userId))
       .orderBy(desc(post.createdAt));
 
     return c.json({ data });
   })
-  .get("/main-posts", async (c) => {
+  .get("/latest-posts", async (c) => {
     const data = await db
       .select()
       .from(post)
-      .where(eq(post.isFeatured, false))
+      .where(and(eq(post.isFeatured, false), eq(post.isPublished, true)))
+      .innerJoin(user, eq(user.id, post.userId))
+      .orderBy(desc(post.createdAt));
+
+    return c.json({ data });
+  })
+  .get("/nba-posts", async (c) => {
+    const data = await db
+      .select()
+      .from(post)
+      .where(and(eq(post.isPublished, true), eq(post.league, "NBA")))
+      .innerJoin(user, eq(user.id, post.userId))
+      .orderBy(desc(post.createdAt));
+
+    return c.json({ data });
+  })
+  .get("/nfl-posts", async (c) => {
+    const data = await db
+      .select()
+      .from(post)
+      .where(and(eq(post.isPublished, true), eq(post.league, "NFL")))
       .innerJoin(user, eq(user.id, post.userId))
       .orderBy(desc(post.createdAt));
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useState } from "react";
-import { useEditor, EditorContent, Content } from "@tiptap/react";
+import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Toolbar } from "@/components/toolbar";
 import Underline from "@tiptap/extension-underline";
@@ -21,6 +21,7 @@ type TextEditorProps = {
 export const EditTextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
   ({ initialContent, onChange }, ref) => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [contentSet, setContentSet] = useState<boolean>(false);
 
     const editor = useEditor({
       extensions: [
@@ -55,10 +56,11 @@ export const EditTextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
     });
 
     useEffect(() => {
-      if (editor) {
+      if (editor && !contentSet) {
         editor.commands.setContent(initialContent);
+        setContentSet(true);
       }
-    }, [editor, initialContent]);
+    }, [editor, initialContent, contentSet]);
 
     if (isLoading) {
       return (
@@ -95,3 +97,5 @@ export const EditTextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
     );
   }
 );
+
+EditTextEditor.displayName = "EditTextEditor";

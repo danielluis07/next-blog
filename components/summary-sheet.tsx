@@ -15,6 +15,9 @@ import { useSummary } from "@/hooks/use-summary";
 import { IoClose } from "react-icons/io5";
 import Image from "next/image";
 import placeholder from "@/public/images/image-placeholder.jpg";
+import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 const formSchema = insertCategorySchema.pick({
   name: true,
@@ -31,6 +34,8 @@ type SummaryProps = {
   title: string;
   description: string;
   imageUrl: string | null | undefined;
+  league: string;
+  postType: string;
   selectedCategories: Categories[];
   onRemove: (url?: string | undefined) => void;
 };
@@ -39,11 +44,14 @@ export const SummarySheet = ({
   title,
   description,
   imageUrl,
+  league,
+  postType,
   selectedCategories,
   onRemove,
 }: SummaryProps) => {
   const { isOpen, onClose } = useSummary();
   const mutation = useCreateCategory();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const onSubmit = (values: FormValues) => {
     mutation.mutate(values, {
@@ -61,11 +69,16 @@ export const SummarySheet = ({
           <SheetDescription>Confira o resumo do seu post</SheetDescription>
         </SheetHeader>
         <Separator className="my-5" />
-        <div>
+        <div className="h-[500px] overflow-y-auto">
           <p className="mb-2 text-xl">{title ? title : "Título"}</p>
           <p className="text-gray-400">
             {description ? description : "Descrição"}
           </p>
+          {isLoading && (
+            <div>
+              <Skeleton className="w-full h-72" />
+            </div>
+          )}
           <div className="relative mt-2 w-full h-72 bg-cover rounded-md overflow-hidden">
             {imageUrl && (
               <div
@@ -78,18 +91,31 @@ export const SummarySheet = ({
               src={imageUrl ? imageUrl : placeholder}
               alt="preview"
               fill
+              onLoad={() => setIsLoading(false)}
               priority
             />
           </div>
-          <div className="flex flex-wrap items-center space-x-2 py-2">
-            {selectedCategories.map((category) => (
-              <div
-                key={category.id}
-                className="flex items-center justify-center grow-0 p-2 rounded-lg bg-muted">
-                <p className="text-sm text-gray-400">{category.name}</p>
+          <div className="mt-2">
+            <div>
+              <span>Liga: {league}</span>
+              <span>Tipo: {postType}</span>
+            </div>
+            <div>
+              <span className="mt-2">Categorias</span>
+              <div className="flex flex-wrap items-center space-x-2 pb-2">
+                {selectedCategories.map((category) => (
+                  <div
+                    key={category.id}
+                    className="flex items-center justify-center grow-0 p-2 rounded-lg bg-muted">
+                    <p className="text-sm text-gray-400">{category.name}</p>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
+        </div>
+        <div className="mt-1">
+          <Button className="w-full">Publicar</Button>
         </div>
       </SheetContent>
     </Sheet>

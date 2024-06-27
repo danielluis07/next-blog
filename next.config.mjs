@@ -18,6 +18,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "media.gettyimages.com",
       },
+      {
+        protocol: "https",
+        hostname: "wallpapercave.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.nba.com",
+      },
     ],
   },
 };

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetPost } from "@/queries/posts/use-get-post";
-import { insertPostSchema } from "@/db/schema";
+import { insertPostSchema, league, postType } from "@/db/schema";
 import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useGetPostCategories } from "@/queries/posts/get-post-categories";
@@ -30,12 +30,15 @@ import { UploadImage } from "@/components/uploadImage";
 import { Button } from "@/components/ui/button";
 import { useSummary } from "@/hooks/use-summary";
 import { EditTextEditor } from "@/components/edit-text-editor";
-import { SummarySheet } from "@/app/dashboard/new-post/_components/summary-sheet";
+import { SummarySheet } from "@/components/summary-sheet";
 import { useEditPost } from "@/queries/posts/use-edit-post";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useRouter } from "next/navigation";
 import { useDeletePost } from "@/queries/posts/use-delete-post";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale/pt-BR";
 
 type EditPostProps = {
   id: string;
@@ -47,6 +50,9 @@ const formSchema = insertPostSchema
     description: true,
     shortDescription: true,
     imageUrl: true,
+    postType: true,
+    league: true,
+    isPublished: true,
     content: true,
     isFeatured: true,
   })
@@ -75,13 +81,13 @@ export const EditPostForm = ({ id }: EditPostProps) => {
     ? postCategoriesQuery?.data.map((cat) => cat.id)
     : [];
   const disabled = !categoriesQuery.isLoading && categories?.length === 0;
+  const createdAt = postQuery?.data?.post.createdAt as string | number | Date;
+  const updatedAt = postQuery?.data?.post.updatedAt as string | number | Date;
 
   const [ConfirmDialog, confirm] = useConfirm(
     "Tem certeza?",
     "Você está prestes a deletar esse post"
   );
-
-  console.log(postQuery.data);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -91,6 +97,9 @@ export const EditPostForm = ({ id }: EditPostProps) => {
       shortDescription: null,
       imageUrl: "",
       content: "",
+      league: undefined,
+      postType: undefined,
+      isPublished: false,
       categoryIds: [],
       isFeatured: false,
     },
@@ -164,6 +173,8 @@ export const EditPostForm = ({ id }: EditPostProps) => {
         imageUrl: postQuery.data.post.imageUrl,
         content: postQuery.data.post.content,
         categoryIds: postCategoriesIds,
+        postType: postQuery.data.post.postType,
+        league: postQuery.data.post.league,
         isFeatured: postQuery.data.post.isFeatured,
       });
     }
@@ -203,7 +214,7 @@ export const EditPostForm = ({ id }: EditPostProps) => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit, onInvalid)}
-            className="space-y-2">
+            className="space-y-3">
             <FormField
               name="title"
               control={form.control}
@@ -211,17 +222,6 @@ export const EditPostForm = ({ id }: EditPostProps) => {
                 <FormItem>
                   <FormControl>
                     <Input {...field} placeholder="Insira um título" />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="description"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input {...field} placeholder="Insira uma descrição" />
                   </FormControl>
                 </FormItem>
               )}
@@ -237,6 +237,67 @@ export const EditPostForm = ({ id }: EditPostProps) => {
                       value={field.value ? field.value : ""}
                       placeholder="Insira uma descrição curta"
                     />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="description"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea {...field} placeholder="Insira uma descrição" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="league"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}>
+                      <SelectTrigger>{field.value}</SelectTrigger>
+                      <SelectContent>
+                        {league.enumValues.map((option, index) => (
+                          <SelectItem
+                            className="cursor-pointer"
+                            key={index}
+                            value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="postType"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}>
+                      <SelectTrigger>{field.value}</SelectTrigger>
+                      <SelectContent>
+                        {postType.enumValues.map((option, index) => (
+                          <SelectItem
+                            className="cursor-pointer"
+                            key={index}
+                            value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                 </FormItem>
               )}
@@ -359,6 +420,7 @@ export const EditPostForm = ({ id }: EditPostProps) => {
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                   <FormControl>
                     <Checkbox
+                      disabled={mutation.isPending}
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
@@ -366,13 +428,54 @@ export const EditPostForm = ({ id }: EditPostProps) => {
                   <div className="space-y-1 leading-none">
                     <FormLabel>Destaque</FormLabel>
                     <FormDescription>
-                      Esse produto vai aparecer na página principal
+                      Esse produto vai aparecer no carrosel
                     </FormDescription>
                   </div>
                 </FormItem>
               )}
             />
-            <div className="space-x-2">
+            <FormField
+              control={form.control}
+              name="isPublished"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      disabled={mutation.isPending}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Publicar</FormLabel>
+                    <FormDescription>
+                      Esse produto vai aparecer no blog
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+            <div className="flex items-center justify-end pr-2">
+              <div className="flex gap-x-10">
+                <p className="text-[12px] text-muted-foreground">
+                  Criado em:{" "}
+                  <span>
+                    {format(createdAt, "dd/MM/yyyy HH:mm", {
+                      locale: ptBR,
+                    })}
+                  </span>
+                </p>
+                <p className="text-[12px] text-muted-foreground">
+                  Atualizado em:{" "}
+                  <span>
+                    {format(updatedAt, "dd/MM/yyyy HH:mm", {
+                      locale: ptBR,
+                    })}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="space-x-2 border rounded-lg p-5 ">
               <Button
                 className="w-56"
                 type="submit"
@@ -402,6 +505,8 @@ export const EditPostForm = ({ id }: EditPostProps) => {
         title={form.watch("title")}
         description={form.watch("description")}
         imageUrl={form.watch("imageUrl")}
+        league={form.watch("league")}
+        postType={form.watch("postType")}
         onRemove={() => form.setValue("imageUrl", "")}
         selectedCategories={selectedCategories}
       />

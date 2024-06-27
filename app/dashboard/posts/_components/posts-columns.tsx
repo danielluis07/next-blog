@@ -8,13 +8,44 @@ import Image from "next/image";
 import placeholder from "@/public/images/image-placeholder.jpg";
 import userPlaceholder from "@/public/images/placeholder-logo.jpg";
 import { PostsCellAction } from "./posts-cell-action";
+import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export type ResponseType = InferResponseType<
-  typeof client.api.posts.$get,
+/* export type ResponseType = InferResponseType<
+  typeof client.api.protected.posts.$get,
   200
->["data"][0];
+>["data"][0]; */
 
-export const columns: ColumnDef<ResponseType>[] = [
+export type FormattedPosts = {
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+    role: "ADMIN" | "USER";
+    emailVerified: string | null;
+    createdAt: string | null;
+    updatedAt: string | null;
+  };
+  post: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    description: string;
+    shortDescription: string | null;
+    title: string;
+    imageUrl: string | null;
+    postType: "NOTÍCIA" | "OPINIÃO" | "PODCAST" | "HISTÓRIA";
+    league: string;
+    content: string;
+    isPublished: string;
+    isFeatured: string;
+    likes: number | null;
+    userId: string;
+  };
+};
+
+export const columns: ColumnDef<FormattedPosts>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -38,27 +69,34 @@ export const columns: ColumnDef<ResponseType>[] = [
     enableHiding: false,
   },
   {
+    id: "title",
     accessorKey: "post.title",
     header: "Título",
   },
   {
     accessorKey: "post.imageUrl",
     header: "Imagem",
-    cell: ({ row }) => (
-      <div className="relative size-14 rounded-sm overflow-hidden">
-        <Image
-          src={
-            row.original.post.imageUrl
-              ? row.original.post.imageUrl
-              : placeholder
-          }
-          fill
-          alt="imagem"
-          className="object-cover"
-          sizes="(max-width: 3840px) 56px"
-        />
-      </div>
-    ),
+    cell: ({ row }) => {
+      const [isLoading, setIsLoading] = useState<boolean>(true);
+      return (
+        <div>
+          {isLoading && <Skeleton className="size-28 rounded-sm" />}
+          <div className="relative size-28 rounded-sm overflow-hidden">
+            <Image
+              src={
+                row.original.post.imageUrl
+                  ? row.original.post.imageUrl
+                  : placeholder
+              }
+              fill
+              onLoad={() => setIsLoading(false)}
+              alt="imagem"
+              sizes="(max-width: 3840px) 700px"
+            />
+          </div>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "post.isPublished",
@@ -73,21 +111,38 @@ export const columns: ColumnDef<ResponseType>[] = [
     header: "Curtidas",
   },
   {
+    accessorKey: "post.postType",
+    header: "Tipo",
+  },
+  {
+    accessorKey: "post.league",
+    header: "Liga",
+  },
+  {
     accessorKey: "user.image",
     header: "Autor",
-    cell: ({ row }) => (
-      <div className="relative size-12 rounded-full overflow-hidden">
-        <Image
-          src={
-            row.original.user.image ? row.original.user.image : userPlaceholder
-          }
-          fill
-          alt="imagem"
-          className="object-cover"
-          sizes="(max-width: 3840px) 48px"
-        />
-      </div>
-    ),
+    cell: ({ row }) => {
+      const [isLoading, setIsLoading] = useState<boolean>(true);
+      return (
+        <div>
+          {isLoading && <Skeleton className="size-8 rounded-full" />}
+          <div className="relative size-8 rounded-full overflow-hidden">
+            <Image
+              src={
+                row.original.user.image
+                  ? row.original.user.image
+                  : userPlaceholder
+              }
+              fill
+              alt="imagem"
+              onLoad={() => setIsLoading(false)}
+              className="object-cover"
+              sizes="(max-width: 3840px) 48px"
+            />
+          </div>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "post.createdAt",
