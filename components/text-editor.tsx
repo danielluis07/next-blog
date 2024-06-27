@@ -90,3 +90,5 @@ export const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
     );
   }
 );
+
+TextEditor.displayName = "TextEditor";

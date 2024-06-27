@@ -13,7 +13,7 @@ import { BsListUl, BsListOl } from "react-icons/bs";
 import { LuHeading1, LuHeading2, LuHeading3 } from "react-icons/lu";
 import { RiDoubleQuotesL, RiFontFamily } from "react-icons/ri";
 import { GoHorizontalRule } from "react-icons/go";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { CiUndo } from "react-icons/ci";
 import { CiRedo } from "react-icons/ci";
 import { GoStrikethrough } from "react-icons/go";
@@ -21,6 +21,21 @@ import { UploadButton } from "@/lib/uploadthing";
 import { toast } from "sonner";
 import { MoonLoader } from "react-spinners";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "./ui/button";
 
 type ToolbarProps = {
   editor: Editor | null;
@@ -68,7 +83,6 @@ const colors = [
 export const Toolbar = ({ editor }: ToolbarProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
-  const colorDivRef = useRef<HTMLDivElement>(null);
 
   if (!editor) {
     return null;
@@ -76,26 +90,8 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
 
   const handleClick = (colorValue: string) => {
     setValue(colorValue);
-    setOpen(false);
     editor.chain().focus().setColor(colorValue).run();
   };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        colorDivRef.current &&
-        !colorDivRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [colorDivRef]);
 
   return (
     <div className="flex flex-col gap-y-3 lg:flex-row lg:items-center lg:space-x-5 pb-2">
@@ -128,36 +124,38 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
           onPressedChange={() => editor.chain().focus().toggleStrike().run()}>
           <GoStrikethrough className="text-lg" />
         </Toggle>
-        <div
-          ref={colorDivRef}
-          onClick={() => setOpen(!open)}
-          className="relative inline-flex items-center justify-center border border-gray-200 py-[5px] px-[7px] cursor-pointer rounded-md text-sm font-medium transition-colors hover:bg-muted">
+      </div>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          asChild
+          className="w-min border border-gray-200 px-[7px] py-[5px] cursor-pointer rounded-md">
           <div className="flex flex-col justify-center">
             <RiFontFamily className="text-lg" />
             <div
-              className="w-full h-[3px]"
+              className="h-[3px] w-[19px]"
               style={{
                 backgroundColor: value
                   ? colors.find((color) => color.value === value)?.value
                   : "#000000",
               }}></div>
           </div>
-          {open && (
-            <div className="grid grid-cols-5 gap-2 p-2 border border-gray-200 absolute left-0 top-[30px] w-48 z-10 bg-white shadow-md">
-              {colors.map((color) => (
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <div className="grid grid-cols-5 gap-2 p-2">
+            {colors.map((color) => (
+              <div
+                className="flex justify-center p-1 hover:bg-muted"
+                key={color.value}
+                onClick={() => handleClick(color.value)}>
                 <div
-                  className="flex justify-center p-1 hover:bg-muted"
-                  key={color.value}
-                  onClick={() => handleClick(color.value)}>
-                  <div
-                    className="size-3"
-                    style={{ backgroundColor: color.value }}></div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+                  className="size-3 cursor-pointer"
+                  style={{ backgroundColor: color.value }}></div>
+              </div>
+            ))}
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <div className="space-x-1">
         <div
