@@ -6,11 +6,22 @@ import publicPosts from "./public-posts";
 import users from "./users";
 import Google from "@auth/core/providers/google";
 import posts from "./posts";
+import comments from "./comments";
 import categories from "./categories";
+import likes from "./likes";
 
 export const runtime = "edge";
 
 const app = new Hono().basePath("/api");
+
+app.use(
+  "*",
+  cors({
+    origin: [process.env.NEXT_PUBLIC_APP_URL!, "http://localhost:3001"],
+    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(
   "*",
@@ -25,15 +36,6 @@ app.use(
   }))
 );
 
-app.use(
-  "*",
-  cors({
-    origin: [process.env.NEXT_PUBLIC_APP_URL!, "http://localhost:3001"],
-    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
 app.use("/auth/*", authHandler());
 
 app.use("/protected/*", verifyAuth());
@@ -41,6 +43,8 @@ app.use("/protected/*", verifyAuth());
 const routes = app
   .route("/public/users", users)
   .route("/protected/posts", posts)
+  .route("/public/comments", comments)
+  .route("/public/likes", likes)
   .route("/protected/categories", categories)
   .route("/public/posts", publicPosts);
 

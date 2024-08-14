@@ -65,6 +65,7 @@ export const post = pgTable("post", {
   content: text("content").notNull(),
   league: league("league").notNull(),
   postType: postType("post_type").notNull(),
+  views: integer("views").default(0),
   isPublished: boolean("is_published").default(false).notNull(),
   isFeatured: boolean("is_featured").default(false).notNull(),
   likes: integer("likes").default(0),
@@ -110,6 +111,17 @@ export const comment = pgTable("comment", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
+export const like = pgTable("like", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_Id")
+    .references(() => user.id, { onDelete: "cascade" })
+    .notNull(),
+  postId: uuid("post_Id")
+    .references(() => post.id, { onDelete: "cascade" })
+    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
 export const notification = pgTable("notification", {
   id: uuid("id").defaultRandom().primaryKey(),
   type: notificationType("notification_type").notNull(),
@@ -122,3 +134,7 @@ export const notification = pgTable("notification", {
 
 export const insertPostSchema = createInsertSchema(post);
 export const insertCategorySchema = createInsertSchema(category);
+export const insertUserSchema = createInsertSchema(user);
+export const insertCommentSchema = createInsertSchema(comment);
+export const insertNotificationSchema = createInsertSchema(notification);
+export const insertLikeSchema = createInsertSchema(like);

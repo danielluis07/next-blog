@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { db } from "@/db/drizzle";
 import { post, category, postToCategory, user } from "@/db/schema";
 import { zValidator } from "@hono/zod-validator";
-import { eq, desc, or, ilike, and } from "drizzle-orm";
+import { eq, desc, or, ilike, and, sql } from "drizzle-orm";
 
 const app = new Hono()
   .get("/", async (c) => {
@@ -140,6 +140,29 @@ const app = new Hono()
       const categories = data.map((item) => item.category);
 
       return c.json({ data: categories });
+    }
+  )
+  .get(
+    "/:id/views",
+    zValidator("param", z.object({ id: z.string() })),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      if (!id) {
+        return c.json({ error: "Missing id" }, 400);
+      }
+
+      const [data] = await db
+        .select({ views: post.views })
+        .from(post)
+        .where(eq(post.id, id));
+
+      if (!data) {
+        return c.json({ error: "Post not found" }, 404);
+      }
+
+      const { views } = data;
+
+      return c.json({ views });
     }
   );
 
