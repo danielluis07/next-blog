@@ -68,7 +68,6 @@ export const post = pgTable("post", {
   views: integer("views").default(0),
   isPublished: boolean("is_published").default(false).notNull(),
   isFeatured: boolean("is_featured").default(false).notNull(),
-  likes: integer("likes").default(0),
   userId: uuid("user_Id")
     .references(() => user.id)
     .notNull(),
