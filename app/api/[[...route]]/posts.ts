@@ -12,7 +12,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { zValidator } from "@hono/zod-validator";
 import { insertPostSchema } from "@/db/schema";
-import { and, eq, inArray, desc, count, sum } from "drizzle-orm";
+import { and, eq, inArray, desc, count, sum, sql } from "drizzle-orm";
 
 const app = new Hono()
   .get("/", async (c) => {
@@ -23,9 +23,40 @@ const app = new Hono()
     }
 
     const data = await db
-      .select()
+      .select({
+        id: post.id,
+        title: post.title,
+        shortDescription: post.shortDescription,
+        imageUrl: post.imageUrl,
+        league: post.league,
+        postType: post.postType,
+        views: post.views,
+        isPublished: post.isPublished,
+        isFeatured: post.isFeatured,
+        userId: post.userId,
+        userImage: user.image,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        likes: sql`COUNT(${like.id})`.as("likes"),
+      })
       .from(post)
       .innerJoin(user, eq(user.id, post.userId))
+      .leftJoin(like, eq(like.postId, post.id))
+      .groupBy(
+        post.id,
+        post.title,
+        post.shortDescription,
+        post.imageUrl,
+        post.league,
+        post.postType,
+        post.views,
+        post.isPublished,
+        post.isFeatured,
+        post.userId,
+        user.image,
+        post.createdAt,
+        post.updatedAt
+      ) // Group by all the non-aggregated fields
       .orderBy(desc(post.createdAt));
 
     return c.json({ data });

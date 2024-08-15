@@ -40,89 +40,63 @@ export const PostsClient = () => {
   });
 
   const formattedPosts = posts.map((item) => ({
-    user: {
-      id: item.user.id,
-      name: item.user.name,
-      email: item.user.email,
-      image: item.user.image,
-      role: item.user.role,
-      emailVerified: item.user.emailVerified,
-      createdAt: item.user.createdAt,
-      updatedAt: item.user.updatedAt,
-    },
-    post: {
-      id: item.post.id,
-      createdAt: item.post.createdAt
-        ? format(new Date(item.post.createdAt), "dd/MM/yyyy", { locale: ptBR })
-        : "N/A",
-      updatedAt: item.post.updatedAt
-        ? format(new Date(item.post.updatedAt), "dd/MM/yyyy", { locale: ptBR })
-        : "N/A",
-      description: item.post.description,
-      shortDescription: item.post.shortDescription,
-      title: item.post.title,
-      imageUrl: item.post.imageUrl,
-      postType: item.post.postType,
-      league: item.post.league,
-      content: item.post.content,
-      isPublished: item.post.isPublished ? "Sim" : "Não",
-      isFeatured: item.post.isFeatured ? "Sim" : "Não",
-      likes: item.post.likes,
-      userId: item.post.userId,
-    },
+    id: item.id,
+    title: item.title,
+    shortDescription: item.shortDescription,
+    imageUrl: item.imageUrl,
+    league: item.league,
+    postType: item.postType,
+    views: item.views,
+    isPublished: item.isPublished ? "Sim" : "Não",
+    isFeatured: item.isFeatured ? "Sim" : "Não",
+    userId: item.userId,
+    userImage: item.userImage,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    likes: item.likes,
   }));
 
   const filterData = (data: FormattedPosts[], filters: Filters) => {
     let filteredData = data;
 
     if (filters.showFeaturedOnly) {
-      filteredData = filteredData.filter(
-        (item) => item.post.isFeatured === "Sim"
-      );
+      filteredData = filteredData.filter((item) => item.isFeatured === "Sim");
     }
 
     if (filters.showPublishedOnly) {
-      filteredData = filteredData.filter(
-        (item) => item.post.isPublished === "Sim"
-      );
+      filteredData = filteredData.filter((item) => item.isPublished === "Sim");
     }
 
     if (filters.showHistoryOnly) {
       filteredData = filteredData.filter(
-        (item) => item.post.postType === "HISTÓRIA"
+        (item) => item.postType === "HISTÓRIA"
       );
     }
 
     if (filters.showNBAOnly) {
-      filteredData = filteredData.filter((item) => item.post.league === "NBA");
+      filteredData = filteredData.filter((item) => item.league === "NBA");
     }
 
     if (filters.showNFLOnly) {
-      filteredData = filteredData.filter((item) => item.post.league === "NFL");
+      filteredData = filteredData.filter((item) => item.league === "NFL");
     }
 
     if (filters.showNewsOnly) {
       filteredData = filteredData.filter(
-        (item) => item.post.postType === "HISTÓRIA"
+        (item) => item.postType === "HISTÓRIA"
       );
     }
 
     if (filters.showPodcastOnly) {
-      filteredData = filteredData.filter(
-        (item) => item.post.postType === "PODCAST"
-      );
+      filteredData = filteredData.filter((item) => item.postType === "PODCAST");
     }
 
     if (filters.showNewsOnly) {
-      filteredData = filteredData.filter(
-        (item) => item.post.postType === "NOTÍCIA"
-      );
+      filteredData = filteredData.filter((item) => item.postType === "NOTÍCIA");
     }
 
     if (filters.showOpinionOnly) {
-      filteredData = filteredData.filter(
-        (item) => item.post.postType === "OPINIÃO"
-      );
+      filteredData = filteredData.filter((item) => item.postType === "OPINIÃO");
     }
 
     return filteredData;
@@ -305,7 +279,7 @@ export const PostsClient = () => {
         data={filterData(formattedPosts, filters)}
         disabled={disabled}
         onDelete={(row) => {
-          const ids = row.map((r) => r.original.post.id);
+          const ids = row.map((r) => r.original.id);
           deletePosts.mutate({ ids });
         }}
         searchKey="title"

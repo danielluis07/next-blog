@@ -17,32 +17,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 >["data"][0]; */
 
 export type FormattedPosts = {
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-    image: string | null;
-    role: "ADMIN" | "USER";
-    emailVerified: string | null;
-    createdAt: string | null;
-    updatedAt: string | null;
-  };
-  post: {
-    id: string;
-    createdAt: string;
-    updatedAt: string;
-    description: string;
-    shortDescription: string | null;
-    title: string;
-    imageUrl: string | null;
-    postType: "NOTÍCIA" | "OPINIÃO" | "PODCAST" | "HISTÓRIA";
-    league: string;
-    content: string;
-    isPublished: string;
-    isFeatured: string;
-    likes: number | null;
-    userId: string;
-  };
+  id: string;
+  title: string;
+  shortDescription: string | null;
+  imageUrl: string | null;
+  league: string;
+  postType: string;
+  views: number | null;
+  isPublished: string;
+  isFeatured: string;
+  userId: string;
+  userImage: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  likes: number;
 };
 
 export const columns: ColumnDef<FormattedPosts>[] = [
@@ -70,22 +58,18 @@ export const columns: ColumnDef<FormattedPosts>[] = [
   },
   {
     id: "title",
-    accessorKey: "post.title",
+    accessorKey: "title",
     header: "Título",
   },
   {
-    accessorKey: "post.imageUrl",
+    accessorKey: "imageUrl",
     header: "Imagem",
     cell: ({ row }) => {
       return (
         <div>
           <div className="relative size-28 rounded-sm overflow-hidden">
             <Image
-              src={
-                row.original.post.imageUrl
-                  ? row.original.post.imageUrl
-                  : placeholder
-              }
+              src={row.original.imageUrl ? row.original.imageUrl : placeholder}
               fill
               alt="imagem"
               sizes="(max-width: 3840px) 700px"
@@ -96,27 +80,27 @@ export const columns: ColumnDef<FormattedPosts>[] = [
     },
   },
   {
-    accessorKey: "post.isPublished",
+    accessorKey: "isPublished",
     header: "Publicado",
   },
   {
-    accessorKey: "post.isFeatured",
+    accessorKey: "isFeatured",
     header: "Destaque",
   },
   {
-    accessorKey: "post.likes",
+    accessorKey: "likes",
     header: "Curtidas",
   },
   {
-    accessorKey: "post.postType",
+    accessorKey: "postType",
     header: "Tipo",
   },
   {
-    accessorKey: "post.league",
+    accessorKey: "league",
     header: "Liga",
   },
   {
-    accessorKey: "user.image",
+    accessorKey: "userImage",
     header: "Autor",
     cell: ({ row }) => {
       return (
@@ -124,8 +108,8 @@ export const columns: ColumnDef<FormattedPosts>[] = [
           <div className="relative size-8 rounded-full overflow-hidden">
             <Image
               src={
-                row.original.user.image
-                  ? row.original.user.image
+                row.original.userImage
+                  ? row.original.userImage
                   : userPlaceholder
               }
               fill
@@ -139,11 +123,11 @@ export const columns: ColumnDef<FormattedPosts>[] = [
     },
   },
   {
-    accessorKey: "post.createdAt",
+    accessorKey: "createdAt",
     header: "Criado em",
   },
   {
     id: "actions",
-    cell: ({ row }) => <PostsCellAction id={row.original.post.id} />,
+    cell: ({ row }) => <PostsCellAction id={row.original.id} />,
   },
 ];

@@ -148,7 +148,11 @@ export function PostsDataTable<TData, TValue>({
                       cellStyle = "w-[350px]";
                     }
 
-                    if (cell.column.id === "post_isPublished") {
+                    if (cell.column.id === "likes") {
+                      cellStyle = "text-center";
+                    }
+
+                    if (cell.column.id === "isPublished") {
                       if (cell.getValue() === "Sim") {
                         cellStyle =
                           "flex justify-center w-10 py-1 ml-4 rounded-lg bg-green-200 text-green-700 font-bold"; // Style for 'Sim'
@@ -158,7 +162,7 @@ export function PostsDataTable<TData, TValue>({
                       }
                     }
 
-                    if (cell.column.id === "post_isFeatured") {
+                    if (cell.column.id === "isFeatured") {
                       if (cell.getValue() === "Sim") {
                         cellStyle =
                           "flex justify-center w-10 py-1 ml-4 rounded-lg bg-blue-200 text-blue-500 font-bold"; // Style for 'Sim'
