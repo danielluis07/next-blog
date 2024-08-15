@@ -1,17 +1,24 @@
-import { LatestPosts } from "./_components/latest-posts";
-import { PostsCount } from "./_components/posts-count";
+import { LatestUsers } from "./_components/cards/latest-users";
+import { LatestPosts } from "./_components/cards/latest-posts";
+import { TotalPosts } from "./_components/cards/numbers/total-posts";
+import { TotalViews } from "./_components/cards/numbers/total-views";
+import { TotalLikes } from "./_components/cards/numbers/total-likes";
+import { TotalComments } from "./_components/cards/numbers/total-comments";
+import { LatestComments } from "./_components/cards/latest-comments";
 
 const DashboardPage = async () => {
   return (
-    <div>
-      <div>
-        <PostsCount />
+    <div className="w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-10">
+        <TotalPosts />
+        <TotalViews />
+        <TotalLikes />
+        <TotalComments />
       </div>
-      <div className="space-y-5">
-        <h1 className="text-xl font-bold p-3 text-center 2xl:text-start">
-          Últimos posts
-        </h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 xl:overflow-auto gap-10 pb-4 custom-grid-rows mt-14">
+        <LatestUsers />
         <LatestPosts />
+        <LatestComments />
       </div>
     </div>
   );

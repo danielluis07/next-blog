@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { client } from "@/lib/hono";
 
-export const useGetLatestPosts = () => {
+export const getLatestUsers = () => {
   const query = useQuery({
-    queryKey: ["latest-posts"],
+    queryKey: ["latest-users"],
     queryFn: async () => {
-      const res = await client.api.protected.posts["latest-posts"].$get();
+      const res = await client.api.protected.users["latest"].$get();
 
       if (!res.ok) {
-        throw new Error("Failed to fetch latest posts");
+        throw new Error("Failed to fetch latest users");
       }
 
       const { data } = await res.json();

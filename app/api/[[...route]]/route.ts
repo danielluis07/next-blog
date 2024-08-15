@@ -4,11 +4,14 @@ import { handle } from "hono/vercel";
 import { authHandler, initAuthConfig, verifyAuth } from "@hono/auth-js";
 import publicPosts from "./public-posts";
 import users from "./users";
+import publicUsers from "./public-users";
 import Google from "@auth/core/providers/google";
 import posts from "./posts";
-import comments from "./comments";
+import publicComments from "./public-comments";
 import categories from "./categories";
+import publicLikes from "./public-likes";
 import likes from "./likes";
+import comments from "./comments";
 
 export const runtime = "edge";
 
@@ -41,10 +44,13 @@ app.use("/auth/*", authHandler());
 app.use("/protected/*", verifyAuth());
 
 const routes = app
-  .route("/public/users", users)
+  .route("/protected/users", users)
+  .route("/protected/likes", likes)
+  .route("/protected/comments", comments)
+  .route("/public/users", publicUsers)
   .route("/protected/posts", posts)
-  .route("/public/comments", comments)
-  .route("/public/likes", likes)
+  .route("/public/comments", publicComments)
+  .route("/public/likes", publicLikes)
   .route("/protected/categories", categories)
   .route("/public/posts", publicPosts);
 

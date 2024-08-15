@@ -1,26 +1,73 @@
 import { z } from "zod";
 import { Hono } from "hono";
 import { db } from "@/db/drizzle";
-import { user } from "@/db/schema";
+import { user, like, insertLikeSchema } from "@/db/schema";
 import { zValidator } from "@hono/zod-validator";
-import { insertUserSchema } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq, and } from "drizzle-orm";
 
 const app = new Hono()
   .get("/", async (c) => {
+    const auth = c.get("authUser");
+
+    if (!auth.session) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
     const data = await db
       .select({
         id: user.id,
         name: user.name,
+        image: user.image,
       })
       .from(user);
     return c.json({ data });
   })
+  .get("/latest", async (c) => {
+    const auth = c.get("authUser");
+
+    if (!auth.session) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const data = await db
+      .select({
+        id: user.id,
+        name: user.name,
+        image: user.image,
+        createdAt: user.createdAt,
+      })
+      .from(user)
+      .where(eq(user.role, "USER"))
+      .limit(10)
+      .orderBy(desc(user.createdAt));
+    return c.json({ data });
+  })
+  .get(
+    "liked-posts/user/:userId",
+    zValidator("param", insertLikeSchema.pick({ userId: true })),
+    async (c) => {
+      const auth = c.get("authUser");
+
+      if (!auth.session) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const { userId } = c.req.valid("param");
+      const data = await db.select().from(like).where(eq(like.userId, userId));
+
+      return c.json({ data });
+    }
+  )
   .get(
     "/:id",
     zValidator("param", z.object({ id: z.string().optional() })),
     async (c) => {
+      const auth = c.get("authUser");
       const { id } = c.req.valid("param");
+
+      if (!auth.session) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
 
       if (!id) {
         return c.json({ error: "Missing id" }, 400);
@@ -35,22 +82,6 @@ const app = new Hono()
         .where(eq(user.id, id));
       return c.json({ data });
     }
-  )
-  .post("/create-user", zValidator("json", insertUserSchema), async (c) => {
-    const values = c.req.valid("json");
-
-    const existingUser = await db
-      .select()
-      .from(user)
-      .where(eq(user.email, values.email))
-      .limit(1);
-
-    if (existingUser.length > 0) {
-      return c.json({ message: "User already exists" });
-    }
-
-    const [data] = await db.insert(user).values(values).returning();
-    return c.json({ data });
-  });
+  );
 
 export default app;

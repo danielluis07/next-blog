@@ -4,7 +4,7 @@ import { db } from "@/db/drizzle";
 import { post, user, comment } from "@/db/schema";
 import { insertCommentSchema } from "@/db/schema";
 import { zValidator } from "@hono/zod-validator";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 
 const app = new Hono()
   .get("/", async (c) => {
@@ -17,87 +17,35 @@ const app = new Hono()
 
     return c.json({ data });
   })
-  .get(
-    "/:id",
-    zValidator(
-      "param",
-      z.object({
-        id: z.string().optional(),
-      })
-    ),
-    async (c) => {
-      const { id } = c.req.valid("param");
+  .get("/latest-comments", async (c) => {
+    const auth = c.get("authUser");
 
-      if (!id) {
-        return c.json({ error: "Missing id" }, 400);
-      }
-
-      const [data] = await db
-        .select()
-        .from(comment)
-        .innerJoin(user, eq(user.id, comment.authorId))
-        .innerJoin(post, eq(post.id, comment.postId))
-        .where(eq(comment.id, id));
-
-      if (!data) {
-        return c.json({ error: "Not found" }, 404);
-      }
-
-      return c.json({ data });
+    if (!auth.session) {
+      return c.json({ error: "Unauthorized" }, 401);
     }
-  )
-  .get(
-    "/post/:id",
-    zValidator(
-      "param",
-      z.object({
-        id: z.string().optional(),
-      })
-    ),
-    async (c) => {
-      const { id } = c.req.valid("param");
 
-      if (!id) {
-        return c.json({ error: "Missing id" }, 400);
-      }
+    const data = await db
+      .select()
+      .from(comment)
+      .innerJoin(user, eq(user.id, comment.authorId))
+      .innerJoin(post, eq(post.id, comment.postId))
+      .orderBy(desc(post.createdAt))
+      .limit(5);
 
-      const data = await db
-        .select({
-          commentId: comment.id,
-          text: comment.text,
-          authorId: comment.authorId,
-          authorName: user.name,
-          createdAt: comment.createdAt,
-          updatedAt: comment.updatedAt,
-          userId: user.id,
-          email: user.email,
-          imageUrl: user.image,
-          name: user.name,
-          userRole: user.role,
-          emailVerified: user.emailVerified,
-        })
-        .from(comment)
-        .innerJoin(user, eq(user.id, comment.authorId))
-        .innerJoin(post, eq(post.id, comment.postId))
-        .where(eq(post.id, id));
+    return c.json({ data });
+  })
+  .get("/general-count", async (c) => {
+    const auth = c.get("authUser");
 
-      if (!data) {
-        return c.json({ error: "Not found" }, 404);
-      }
-
-      return c.json({ data });
+    if (!auth.session) {
+      return c.json({ error: "Unauthorized" }, 401);
     }
-  )
-  .post(
-    "/create-comment",
-    zValidator("json", insertCommentSchema),
-    async (c) => {
-      const values = c.req.valid("json");
 
-      const [data] = await db.insert(comment).values(values).returning();
+    const [data] = await db.select({ value: count() }).from(comment);
 
-      return c.json({ data });
-    }
-  );
+    const { value } = data;
+
+    return c.json({ value });
+  });
 
 export default app;

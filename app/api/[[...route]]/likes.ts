@@ -8,6 +8,12 @@ import { eq, desc, count, and } from "drizzle-orm";
 
 const app = new Hono()
   .get("/", async (c) => {
+    const auth = c.get("authUser");
+
+    if (!auth.session) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
     const data = await db
       .select()
       .from(like)
@@ -18,13 +24,17 @@ const app = new Hono()
     return c.json({ data });
   })
   .get("/general-count", async (c) => {
-    const data = await db.select({ count: count() }).from(like);
+    const auth = c.get("authUser");
 
-    if (!data) {
-      return c.json({ error: "Not found" }, 404);
+    if (!auth.session) {
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
-    return c.json({ likes: data[0].count });
+    const [data] = await db.select({ value: count() }).from(like);
+
+    const { value } = data;
+
+    return c.json({ value });
   })
   .get(
     "post/:id",
@@ -35,7 +45,12 @@ const app = new Hono()
       })
     ),
     async (c) => {
+      const auth = c.get("authUser");
       const { id } = c.req.valid("param");
+
+      if (!auth.session) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
 
       if (!id) {
         return c.json({ error: "Missing id" }, 400);
@@ -52,71 +67,6 @@ const app = new Hono()
       }
 
       return c.json({ likes: data[0].count });
-    }
-  )
-  .get(
-    "post/:postId/user/:userId",
-    zValidator("param", insertLikeSchema.pick({ postId: true, userId: true })),
-    async (c) => {
-      const { postId, userId } = c.req.valid("param");
-      const data = await db
-        .select()
-        .from(like)
-        .where(and(eq(like.postId, postId), eq(like.userId, userId)));
-
-      const liked = data.length > 0;
-
-      return c.json({ liked });
-    }
-  )
-  .post(
-    "post/create-like",
-    zValidator("json", insertLikeSchema.pick({ postId: true, userId: true })),
-    async (c) => {
-      const { postId, userId } = c.req.valid("json");
-
-      const existingLike = await db
-        .select()
-        .from(like)
-        .where(and(eq(like.postId, postId), eq(like.userId, userId)));
-
-      if (existingLike.length > 0) {
-        return c.json({ error: "User already liked this post" }, 400);
-      }
-
-      const [data] = await db
-        .insert(like)
-        .values({ postId, userId })
-        .returning();
-
-      return c.json({ data });
-    }
-  )
-  .delete(
-    "post/remove-like",
-    zValidator("json", insertLikeSchema.pick({ postId: true, userId: true })),
-    async (c) => {
-      const { postId, userId } = c.req.valid("json");
-
-      const existingLike = await db
-        .select()
-        .from(like)
-        .where(and(eq(like.postId, postId), eq(like.userId, userId)));
-
-      if (existingLike.length === 0) {
-        return c.json({ error: "Like not found" }, 404);
-      }
-
-      const [data] = await db
-        .delete(like)
-        .where(and(eq(like.postId, postId), eq(like.userId, userId)))
-        .returning();
-
-      if (!data) {
-        return c.json({ error: "Not found" }, 404);
-      }
-
-      return c.json({ data });
     }
   );
 

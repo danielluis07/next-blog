@@ -3,7 +3,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetPostsCount } from "@/queries/posts/get-post-count";
 
-export const PostsCount = () => {
+export const TotalPosts = () => {
   const postsCountQuery = useGetPostsCount();
 
   if (postsCountQuery.isLoading) {
@@ -11,12 +11,10 @@ export const PostsCount = () => {
   }
 
   return (
-    <div className="flex justify-center items-center size-40 rounded-md bg-gradient-to-r from-slate-50 to-slate-100 shadow-lg">
+    <div className="flex justify-center items-center size-40 rounded-md shadow-md">
       <div className="flex flex-col">
-        <span className="text-5xl text-center">
-          {postsCountQuery.data?.count}
-        </span>
-        <span className="text-xl">Posts</span>
+        <span className="text-xl">Total de Posts</span>
+        <span className="text-3xl">{postsCountQuery.data?.count}</span>
       </div>
     </div>
   );

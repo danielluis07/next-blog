@@ -1,11 +1,18 @@
 import { z } from "zod";
 import { Hono } from "hono";
 import { db } from "@/db/drizzle";
-import { post, category, postToCategory, user } from "@/db/schema";
+import {
+  post,
+  category,
+  postToCategory,
+  user,
+  like,
+  comment,
+} from "@/db/schema";
 import { v4 as uuidv4 } from "uuid";
 import { zValidator } from "@hono/zod-validator";
 import { insertPostSchema } from "@/db/schema";
-import { and, eq, inArray, desc, count } from "drizzle-orm";
+import { and, eq, inArray, desc, count, sum } from "drizzle-orm";
 
 const app = new Hono()
   .get("/", async (c) => {
@@ -31,7 +38,12 @@ const app = new Hono()
     }
 
     const data = await db
-      .select({ id: post.id, imageUrl: post.imageUrl, title: post.title })
+      .select({
+        id: post.id,
+        imageUrl: post.imageUrl,
+        title: post.title,
+        createdAt: post.createdAt,
+      })
       .from(post)
       .where(eq(post.isPublished, true))
       .innerJoin(user, eq(user.id, post.userId))
@@ -297,6 +309,19 @@ const app = new Hono()
 
       return c.json({ data });
     }
-  );
+  )
+  .get("/views/sum", async (c) => {
+    const auth = c.get("authUser");
+
+    if (!auth.session) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const [data] = await db.select({ value: sum(post.views) }).from(post);
+
+    const { value } = data;
+
+    return c.json({ value });
+  });
 
 export default app;

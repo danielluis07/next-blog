@@ -20,9 +20,12 @@ export const LogoutButton = () => {
   return (
     <>
       <ExitModal exited={isPending} />
-      <Button onClick={onClick} variant="transparent" className="space-x-2">
-        <p>Sair</p>
+      <Button
+        onClick={onClick}
+        variant="destructive"
+        className="space-x-2 my-2 w-full">
         <CiLogout className="text-lg" />
+        <p>Sair</p>
       </Button>
     </>
   );

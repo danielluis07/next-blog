@@ -9,6 +9,18 @@ body,
   background: linear-gradient(to right, #7c3aed, #22d3ee);
 }
 
+@media (min-width: 768px) {
+  .custom-grid-rows {
+    grid-template-rows: repeat(8, 20vh);
+  }
+}
+
+@media (min-width: 1280px) {
+  .custom-grid-rows {
+    grid-template-rows: repeat(8, 7.5vh);
+  }
+}
+
 /* width */
 ::-webkit-scrollbar {
   width: 10px;
