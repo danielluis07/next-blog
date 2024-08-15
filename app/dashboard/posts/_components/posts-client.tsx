@@ -51,8 +51,12 @@ export const PostsClient = () => {
     isFeatured: item.isFeatured ? "Sim" : "Não",
     userId: item.userId,
     userImage: item.userImage,
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt,
+    createdAt: item.createdAt
+      ? format(new Date(item.createdAt), "dd/MM/yyyy", { locale: ptBR })
+      : "N/A",
+    updatedAt: item.updatedAt
+      ? format(new Date(item.updatedAt), "dd/MM/yyyy", { locale: ptBR })
+      : "N/A",
     likes: item.likes,
   }));
 
