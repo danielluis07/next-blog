@@ -102,7 +102,9 @@ export const LatestComments = () => {
                         {item.user.name}
                       </span>
                     </div>
-                    <p className="truncate text-sm">"{item.comment.text}"</p>
+                    <p className="truncate text-sm">
+                      &quot;{item.comment.text}&quot;
+                    </p>
                   </div>
                 </div>
               </div>
