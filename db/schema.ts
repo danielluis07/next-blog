@@ -13,6 +13,7 @@ import { createInsertSchema } from "drizzle-zod";
 export const notificationType = pgEnum("notification_type", [
   "NEW_USER",
   "NEW_COMMENT",
+  "NEW_LIKE",
 ]);
 
 export const role = pgEnum("role", ["ADMIN", "USER"]);
@@ -125,6 +126,7 @@ export const notification = pgTable("notification", {
   id: uuid("id").defaultRandom().primaryKey(),
   type: notificationType("notification_type").notNull(),
   message: text("message").notNull(),
+  postId: uuid("post_Id").references(() => post.id, { onDelete: "set null" }),
   userId: uuid("user_Id").references(() => user.id, { onDelete: "set null" }),
   viewed: boolean("viewed").default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -137,3 +139,4 @@ export const insertUserSchema = createInsertSchema(user);
 export const insertCommentSchema = createInsertSchema(comment);
 export const insertNotificationSchema = createInsertSchema(notification);
 export const insertLikeSchema = createInsertSchema(like);
+export const insertNotificationsSchema = createInsertSchema(notification);

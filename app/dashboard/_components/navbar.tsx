@@ -11,7 +11,13 @@ import placeholder from "@/public/images/placeholder-logo.jpg";
 import { useOpenSidebar } from "@/hooks/use-sidebar";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
-
+import { useEffect } from "react";
+import { FaHeart } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
+import { toast } from "sonner";
+import { FaComment } from "react-icons/fa";
+import { pusherClient } from "@/lib/pusherClient";
+import { Notifications } from "@/app/dashboard/_components/notifications";
 export const Navbar = () => {
   const { isOpen, onOpen, onClose } = useOpenSidebar();
   const session = useSession();
@@ -25,6 +31,39 @@ export const Navbar = () => {
       onOpen();
     }
   };
+
+  useEffect(() => {
+    pusherClient.subscribe("notifications");
+    const newLike = (data: any) => {
+      toast.success(data.message, {
+        icon: <FaHeart />,
+      });
+    };
+
+    const newComment = (data: any) => {
+      toast.success(data.message, {
+        icon: <FaComment />,
+      });
+    };
+
+    const newUser = (data: any) => {
+      toast.success(data.message, {
+        icon: <FaUser />,
+      });
+    };
+
+    pusherClient.bind("likes:new", newLike);
+    pusherClient.bind("comments:new", newComment);
+    pusherClient.bind("users:new", newUser);
+
+    return () => {
+      pusherClient.unbind("likes:new");
+      pusherClient.unbind("comments:new");
+      pusherClient.unbind("users:new");
+
+      pusherClient.unsubscribe("notifications");
+    };
+  }, []);
 
   return (
     <div className="flex justify-between items-center w-full mb-7">
@@ -70,12 +109,7 @@ export const Navbar = () => {
               )}
             </button>
           </div>
-          <div className="relative">
-            <CiBellOn className="cursor-pointer text-gray-500" size={24} />
-            <span className="absolute -top-2 -right-2 inline-flex items-center justify-center px-[0.4rem] py-1 text-xs font-semibold leading-none text-red-100 bg-red-400 rounded-full">
-              3
-            </span>
-          </div>
+          <Notifications />
           <hr className="w-0 h-7 border border-solid border-l border-gray-300 mx-3" />
           <div className="flex items-center gap-3 cursor-pointer">
             <Image

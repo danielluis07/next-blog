@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { Hono } from "hono";
 import { db } from "@/db/drizzle";
-import { post, user, like } from "@/db/schema";
+import { post, user, like, notification } from "@/db/schema";
 import { insertLikeSchema } from "@/db/schema";
 import { zValidator } from "@hono/zod-validator";
 import { eq, desc, count, and } from "drizzle-orm";
+import { pusherServer } from "@/lib/pusherServer";
 
 const app = new Hono()
   .get("/", async (c) => {
@@ -88,6 +89,27 @@ const app = new Hono()
         .insert(like)
         .values({ postId, userId })
         .returning();
+
+      if (data) {
+        await db
+          .insert(notification)
+          .values({
+            userId,
+            type: "NEW_LIKE",
+            message: "Alguém curtiu seu post",
+            postId,
+            viewed: false,
+          })
+          .returning();
+
+        await pusherServer.trigger("notifications", "likes:new", {
+          message: "Alguém curtiu seu post",
+          userId,
+          postId,
+          createdAt: new Date().toISOString(),
+          type: "NEW_LIKE",
+        });
+      }
 
       return c.json({ data });
     }

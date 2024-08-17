@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { Hono } from "hono";
 import { db } from "@/db/drizzle";
-import { post, user, comment } from "@/db/schema";
+import { post, user, comment, notification } from "@/db/schema";
 import { insertCommentSchema } from "@/db/schema";
 import { zValidator } from "@hono/zod-validator";
 import { eq, desc } from "drizzle-orm";
+import { pusherServer } from "@/lib/pusherServer";
 
 const app = new Hono()
   .get("/", async (c) => {
@@ -94,7 +95,30 @@ const app = new Hono()
     async (c) => {
       const values = c.req.valid("json");
 
+      const { postId, authorId } = values;
+
       const [data] = await db.insert(comment).values(values).returning();
+
+      if (data) {
+        await db
+          .insert(notification)
+          .values({
+            userId: authorId,
+            type: "NEW_COMMENT",
+            message: "Alguém comentou seu post",
+            postId,
+            viewed: false,
+          })
+          .returning();
+
+        await pusherServer.trigger("notifications", "comments:new", {
+          message: "Alguém comentou seu post",
+          userId: authorId,
+          postId,
+          createdAt: new Date().toISOString(),
+          type: "NEW_COMMENT",
+        });
+      }
 
       return c.json({ data });
     }

@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { db } from "@/db/drizzle";
 import { user, like, insertLikeSchema } from "@/db/schema";
 import { zValidator } from "@hono/zod-validator";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, count } from "drizzle-orm";
 
 const app = new Hono()
   .get("/", async (c) => {
@@ -41,6 +41,22 @@ const app = new Hono()
       .limit(10)
       .orderBy(desc(user.createdAt));
     return c.json({ data });
+  })
+  .get("/general-count", async (c) => {
+    const auth = c.get("authUser");
+
+    if (!auth.session) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const [data] = await db
+      .select({ value: count() })
+      .from(user)
+      .where(eq(user.role, "USER"));
+
+    const { value } = data;
+
+    return c.json({ value });
   })
   .get(
     "liked-posts/user/:userId",

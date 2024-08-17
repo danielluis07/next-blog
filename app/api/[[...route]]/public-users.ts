@@ -3,8 +3,9 @@ import { Hono } from "hono";
 import { db } from "@/db/drizzle";
 import { user } from "@/db/schema";
 import { zValidator } from "@hono/zod-validator";
-import { insertUserSchema } from "@/db/schema";
+import { insertUserSchema, notification } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { pusherServer } from "@/lib/pusherServer";
 
 const app = new Hono()
   .get("/", async (c) => {
@@ -39,6 +40,8 @@ const app = new Hono()
   .post("/create-user", zValidator("json", insertUserSchema), async (c) => {
     const values = c.req.valid("json");
 
+    const { id } = values;
+
     const existingUser = await db
       .select()
       .from(user)
@@ -50,6 +53,28 @@ const app = new Hono()
     }
 
     const [data] = await db.insert(user).values(values).returning();
+
+    if (data) {
+      await db
+        .insert(notification)
+        .values({
+          userId: id,
+          type: "NEW_USER",
+          message: "Alguém se cadastrou",
+          postId: null,
+          viewed: false,
+        })
+        .returning();
+
+      await pusherServer.trigger("notifications", "users:new", {
+        message: "Alguém se cadastrou",
+        userId: id,
+        postId: null,
+        createdAt: new Date().toISOString(),
+        type: "NEW_USER",
+      });
+    }
+
     return c.json({ data });
   });
 

@@ -10,10 +10,11 @@ import posts from "./posts";
 import publicComments from "./public-comments";
 import categories from "./categories";
 import publicLikes from "./public-likes";
+import notifications from "./notifications";
 import likes from "./likes";
 import comments from "./comments";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 const app = new Hono().basePath("/api");
 
@@ -47,6 +48,7 @@ const routes = app
   .route("/protected/users", users)
   .route("/protected/likes", likes)
   .route("/protected/comments", comments)
+  .route("/protected/notifications", notifications)
   .route("/public/users", publicUsers)
   .route("/protected/posts", posts)
   .route("/public/comments", publicComments)
