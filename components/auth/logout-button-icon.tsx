@@ -1,13 +1,19 @@
 "use client";
 
 import { CiLogout } from "react-icons/ci";
-import { Button } from "../ui/button";
 import { logOut } from "@/actions/logout";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { ExitModal } from "@/modals/exit-modal";
+import { cn } from "@/lib/utils";
 
-export const LogoutButton = () => {
+interface LogoutButtonIconLinkProps {
+  isCollapsed: boolean;
+}
+
+export const LogoutButtonIcon = ({
+  isCollapsed,
+}: LogoutButtonIconLinkProps) => {
   const [isPending, startTransition] = useTransition();
   const onClick = () => {
     startTransition(() => {
@@ -20,12 +26,14 @@ export const LogoutButton = () => {
   return (
     <>
       <ExitModal exited={isPending} />
-      <Button
+      <button
         onClick={onClick}
-        className="space-x-2 my-5 w-full bg-transparent border-red-500 hover:bg-red-500 group">
-        <CiLogout className="text-lg text-red-500 group-hover:text-white" />
-        <p className="text-sm text-red-500 group-hover:text-white">Sair</p>
-      </Button>
+        className={cn(
+          "cursor-pointer flex items-center hover:text-red-500 w-full",
+          isCollapsed ? "justify-center py-4" : "justify-start px-8 py-4"
+        )}>
+        <CiLogout className="text-lg" />
+      </button>
     </>
   );
 };

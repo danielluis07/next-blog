@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { LogoutButtonIcon } from "@/components/auth/logout-button-icon";
 
 interface SidebarLinkProps {
   href: string;
@@ -81,8 +82,8 @@ export const Sidebar = () => {
       {/* TOP LOGO */}
       <div
         className={cn(
-          !isOpen ? "px-5" : "px-8",
-          "flex gap-3 justify-between md:justify-normal items-center pt-8"
+          !isOpen ? "px-0 justify-center" : "px-8 justify-normal gap-3",
+          "flex items-center pt-8"
         )}>
         <Image
           src={user?.image || placeholder}
@@ -144,6 +145,13 @@ export const Sidebar = () => {
       <div className={cn(!isOpen ? "hidden" : "block", "mb-10")}>
         <LogoutButton />
         <p className="text-center text-xs text-gray-500">&copy; 2024 Stock</p>
+      </div>
+      <div
+        className={cn(
+          !isOpen ? "block" : "hidden",
+          "mb-10 border border-black hover:border-red-500 rounded-lg"
+        )}>
+        <LogoutButtonIcon isCollapsed={!isOpen} />
       </div>
     </div>
   );
